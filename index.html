@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Ensure window.fetch is writable and configurable to prevent errors when tooling/proxies rebind fetch
+      (function() {
+        try {
+          var nativeFetch = window.fetch;
+          if (typeof nativeFetch === 'function') {
+            var _activeFetch = nativeFetch.bind(window);
+            Object.defineProperty(window, 'fetch', {
+              get: function() { return _activeFetch; },
+              set: function(fn) { _activeFetch = fn; },
+              configurable: true,
+              enumerable: true
+            });
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <title>Measurely — Simple Material Calculators</title>
+    <meta name="description" content="Measurely creates simple calculators that help you estimate materials for home and DIY projects." />
+    <meta property="og:site_name" content="Measurely" />
+    <meta property="og:title" content="Measurely — Simple Material Calculators" />
+    <meta property="og:description" content="Measurely creates simple calculators that help you estimate materials for home and DIY projects." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Measurely — Simple Material Calculators" />
+    <meta name="twitter:description" content="Measurely creates simple calculators that help you estimate materials for home and DIY projects." />
+    <meta name="theme-color" content="#F6EFE6" />
+
+    <!-- Structured Data (JSON-LD) for WebSite & Application -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "name": "Measurely",
+          "description": "Simple calculators to help you estimate materials for home and DIY projects."
+        },
+        {
+          "@type": "WebApplication",
+          "name": "Measurely Paint Calculator",
+          "applicationCategory": "UtilityApplication",
+          "operatingSystem": "All",
+          "browserRequirements": "Requires JavaScript. Requires HTML5.",
+          "description": "Calculate how much paint you need based on room dimensions or wall surface area, deducting door and window openings.",
+          "isAccessibleForFree": true,
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        }
+      ]
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-[#F6EFE6] text-[#1A1918] antialiased selection:bg-[#163A5F]/20 selection:text-[#163A5F]">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
