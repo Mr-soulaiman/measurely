@@ -12,36 +12,46 @@ import { PaintCalculatorPage } from './pages/PaintCalculatorPage';
 interface PageMetadata {
   title: string;
   description: string;
+  canonical: string;
 }
+
+const PRODUCTION_DOMAIN = 'https://measurely-tools.vercel.app';
 
 const ROUTE_METADATA: Record<string, PageMetadata> = {
   '/': {
     title: 'Measurely — Simple Material Calculators',
     description: 'Simple tools to help you estimate materials for home and DIY projects.',
+    canonical: `${PRODUCTION_DOMAIN}/`,
   },
   '/tools': {
     title: 'Measurely Tools — Material Calculators',
     description: 'Browse simple, practical material calculators for your home and DIY projects.',
+    canonical: `${PRODUCTION_DOMAIN}/tools`,
   },
   '/tools/paint-calculator': {
     title: 'Paint Calculator — How Much Paint Do I Need? | Measurely',
     description: 'Calculate how much paint you need based on room dimensions or wall area, including doors, windows, multiple coats, and ceiling.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/paint-calculator`,
   },
   '/paint-calculator': {
     title: 'Paint Calculator — How Much Paint Do I Need? | Measurely',
     description: 'Calculate how much paint you need based on room dimensions or wall area, including doors, windows, multiple coats, and ceiling.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/paint-calculator`,
   },
   '/guides': {
     title: 'Measurely Guides — Home & DIY Tips',
     description: 'Simple guides to help you plan your projects.',
+    canonical: `${PRODUCTION_DOMAIN}/guides`,
   },
   '/about': {
     title: 'About Measurely',
     description: 'Measurely creates simple calculators that help you estimate the materials needed for everyday home and DIY projects.',
+    canonical: `${PRODUCTION_DOMAIN}/about`,
   },
   '/contact': {
     title: 'Contact Measurely',
     description: 'Have a question, found a problem, or have an idea for a calculator? Contact Measurely.',
+    canonical: `${PRODUCTION_DOMAIN}/contact`,
   },
 };
 
@@ -55,12 +65,21 @@ function AppContent() {
     }
   }, []);
 
-  // Synchronize document.title and meta tags with current route
+  // Synchronize document.title, canonical URL, and meta tags with current route
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
     const meta = ROUTE_METADATA[currentPath] || ROUTE_METADATA['/'];
     document.title = meta.title;
+
+    // Update Canonical link tag
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', meta.canonical);
 
     // Update Meta Description
     const metaDesc = document.querySelector('meta[name="description"]');
@@ -69,6 +88,14 @@ function AppContent() {
     }
 
     // Update Open Graph tags
+    let ogUrl = document.querySelector('meta[property="og:url"]');
+    if (!ogUrl) {
+      ogUrl = document.createElement('meta');
+      ogUrl.setAttribute('property', 'og:url');
+      document.head.appendChild(ogUrl);
+    }
+    ogUrl.setAttribute('content', meta.canonical);
+
     const ogTitle = document.querySelector('meta[property="og:title"]');
     if (ogTitle) {
       ogTitle.setAttribute('content', meta.title);
