@@ -1,5 +1,5 @@
 import { Link } from '../context/NavigationContext';
-import { Paintbrush, ArrowRight } from 'lucide-react';
+import { Paintbrush, Layers, Boxes, ArrowRight } from 'lucide-react';
 
 export function HomePage() {
   return (
@@ -26,8 +26,13 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* 2. Featured Tool: Paint Calculator */}
-      <section aria-labelledby="featured-tool-heading">
+      {/* 2. Available Tools */}
+      <section aria-labelledby="available-tools-heading" className="space-y-4">
+        <h2 id="available-tools-heading" className="sr-only">
+          Available Calculators
+        </h2>
+
+        {/* Paint Calculator Card */}
         <div className="p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
             <div className="space-y-2">
@@ -35,19 +40,16 @@ export function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-[#EDF7F2] text-[#0B6E54] flex items-center justify-center">
                   <Paintbrush className="w-5 h-5" />
                 </div>
-                <h2
-                  id="featured-tool-heading"
-                  className="text-2xl font-display font-bold text-[#1A1918]"
-                >
+                <h3 className="text-2xl font-display font-bold text-[#1A1918]">
                   Paint Calculator
-                </h2>
+                </h3>
               </div>
               <p className="text-sm sm:text-base text-[#4E4942] font-sans">
                 Find out how much paint you need.
               </p>
             </div>
 
-            <div className="pt-2 sm:pt-0">
+            <div className="pt-2 sm:pt-0 shrink-0">
               <Link
                 href="/tools/paint-calculator"
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#163A5F] text-white font-sans text-sm font-bold shadow-[0_2px_8px_rgba(22,58,95,0.2)] hover:bg-[#112F4D] transition-all cursor-pointer whitespace-nowrap"
@@ -58,40 +60,62 @@ export function HomePage() {
             </div>
           </div>
         </div>
-      </section>
 
-      {/* 3. Future Tools (Upcoming Categories) */}
-      <section aria-labelledby="future-tools-heading" className="space-y-4 pt-2">
-        <h2
-          id="future-tools-heading"
-          className="text-base font-display font-bold text-[#1A1918]"
-        >
-          More tools coming soon
-        </h2>
+        {/* Gravel Calculator Card */}
+        <div className="p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#EDF7F2] text-[#0B6E54] flex items-center justify-center">
+                  <Layers className="w-5 h-5" />
+                </div>
+                <h3 className="text-2xl font-display font-bold text-[#1A1918]">
+                  Gravel Calculator
+                </h3>
+              </div>
+              <p className="text-sm sm:text-base text-[#4E4942] font-sans">
+                Find out how much gravel you need.
+              </p>
+            </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {/* Flooring */}
-          <div className="p-3.5 rounded-xl bg-[#FFFDF9]/80 border border-[#EAE0D5] select-none">
-            <div className="font-display text-sm font-bold text-[#1A1918]">Flooring</div>
-            <div className="text-[11px] text-[#787168] font-sans mt-0.5">Coming soon</div>
+            <div className="pt-2 sm:pt-0 shrink-0">
+              <Link
+                href="/tools/gravel-calculator"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#163A5F] text-white font-sans text-sm font-bold shadow-[0_2px_8px_rgba(22,58,95,0.2)] hover:bg-[#112F4D] transition-all cursor-pointer whitespace-nowrap"
+              >
+                <span>Calculate gravel</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
+        </div>
 
-          {/* Tiles */}
-          <div className="p-3.5 rounded-xl bg-[#FFFDF9]/80 border border-[#EAE0D5] select-none">
-            <div className="font-display text-sm font-bold text-[#1A1918]">Tiles</div>
-            <div className="text-[11px] text-[#787168] font-sans mt-0.5">Coming soon</div>
-          </div>
+        {/* Sand Calculator Card */}
+        <div className="p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#EDF7F2] text-[#0B6E54] flex items-center justify-center">
+                  <Boxes className="w-5 h-5" />
+                </div>
+                <h3 className="text-2xl font-display font-bold text-[#1A1918]">
+                  Sand Calculator
+                </h3>
+              </div>
+              <p className="text-sm sm:text-base text-[#4E4942] font-sans">
+                Find out how much sand you need.
+              </p>
+            </div>
 
-          {/* Concrete */}
-          <div className="p-3.5 rounded-xl bg-[#FFFDF9]/80 border border-[#EAE0D5] select-none">
-            <div className="font-display text-sm font-bold text-[#1A1918]">Concrete</div>
-            <div className="text-[11px] text-[#787168] font-sans mt-0.5">Coming soon</div>
-          </div>
-
-          {/* Soil */}
-          <div className="p-3.5 rounded-xl bg-[#FFFDF9]/80 border border-[#EAE0D5] select-none">
-            <div className="font-display text-sm font-bold text-[#1A1918]">Soil</div>
-            <div className="text-[11px] text-[#787168] font-sans mt-0.5">Coming soon</div>
+            <div className="pt-2 sm:pt-0 shrink-0">
+              <Link
+                href="/tools/sand-calculator"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#163A5F] text-white font-sans text-sm font-bold shadow-[0_2px_8px_rgba(22,58,95,0.2)] hover:bg-[#112F4D] transition-all cursor-pointer whitespace-nowrap"
+              >
+                <span>Calculate sand</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>

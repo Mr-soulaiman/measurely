@@ -29,38 +29,18 @@ export function Navigation() {
         {/* Brand / Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2.5 group cursor-pointer focus-visible:outline-2 focus-visible:outline-[#163A5F] rounded-md"
+          className="flex items-center group cursor-pointer focus-visible:outline-2 focus-visible:outline-[#163A5F] rounded-md transition-opacity hover:opacity-90 py-0.5"
           aria-label="Measurely — Home"
         >
-          <div
-            className="w-8 h-8 rounded-lg bg-[#FFFFFF] border border-[#E2D8CC] shadow-[0_2px_6px_rgba(180,150,125,0.15)] flex items-center justify-center transition-transform group-hover:scale-105"
-            aria-hidden="true"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-[#163A5F]"
-            >
-              <path d="M2.5 13.5H15.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-              <path d="M4 13.5V9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              <path d="M7 13.5V11" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
-              <path d="M10 13.5V8.5" stroke="#D95D39" strokeWidth="1.75" strokeLinecap="round" />
-              <path d="M13 13.5V11" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
-              <path d="M15.5 13.5V9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              <circle cx="10" cy="5" r="1.5" fill="#D95D39" />
-            </svg>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-display text-xl font-extrabold text-[#1A1918] group-hover:text-[#163A5F] transition-colors leading-none tracking-tight">
-              Measurely
-            </span>
-            <span className="text-[10px] sm:text-[11px] text-[#787168] font-sans font-medium tracking-wide mt-1 leading-none">
-              Measure · Calculate · Build
-            </span>
-          </div>
+          <img
+            src="/assets/measurely-logo.png"
+            alt="Measurely"
+            className="h-8 sm:h-9 w-auto object-contain block transition-transform group-hover:scale-[1.02]"
+            width="1098"
+            height="251"
+            loading="eager"
+            decoding="async"
+          />
         </Link>
 
         {/* Desktop Navigation Links */}

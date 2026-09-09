@@ -8,6 +8,8 @@ import { GuidesPage } from './pages/GuidesPage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import { PaintCalculatorPage } from './pages/PaintCalculatorPage';
+import { GravelCalculatorPage } from './pages/GravelCalculatorPage';
+import { SandCalculatorPage } from './pages/SandCalculatorPage';
 
 interface PageMetadata {
   title: string;
@@ -38,6 +40,26 @@ const ROUTE_METADATA: Record<string, PageMetadata> = {
     description: 'Calculate how much paint you need based on room dimensions or wall area, including doors, windows, multiple coats, and ceiling.',
     canonical: `${PRODUCTION_DOMAIN}/tools/paint-calculator`,
   },
+  '/tools/gravel-calculator': {
+    title: 'Gravel Calculator — How Much Gravel Do I Need? | Measurely',
+    description: 'Use the Measurely gravel calculator to find how much gravel you need. Calculate gravel volume, cubic yards, cubic metres, and estimated weight for driveways, paths, gardens, and landscaping.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/gravel-calculator`,
+  },
+  '/gravel-calculator': {
+    title: 'Gravel Calculator — How Much Gravel Do I Need? | Measurely',
+    description: 'Use the Measurely gravel calculator to find how much gravel you need. Calculate gravel volume, cubic yards, cubic metres, and estimated weight for driveways, paths, gardens, and landscaping.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/gravel-calculator`,
+  },
+  '/tools/sand-calculator': {
+    title: 'Sand Calculator — How Much Sand Do I Need? | Measurely',
+    description: 'Use the Measurely sand calculator to find how much sand you need. Calculate sand volume, cubic yards, cubic metres, and estimated weight for landscaping and other projects.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/sand-calculator`,
+  },
+  '/sand-calculator': {
+    title: 'Sand Calculator — How Much Sand Do I Need? | Measurely',
+    description: 'Use the Measurely sand calculator to find how much sand you need. Calculate sand volume, cubic yards, cubic metres, and estimated weight for landscaping and other projects.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/sand-calculator`,
+  },
   '/guides': {
     title: 'Measurely Guides — Home & DIY Tips',
     description: 'Simple guides to help you plan your projects.',
@@ -58,10 +80,16 @@ const ROUTE_METADATA: Record<string, PageMetadata> = {
 function AppContent() {
   const { currentPath } = useNavigation();
 
-  // Normalize /paint-calculator to /tools/paint-calculator if accessed directly
+  // Normalize /paint-calculator, /gravel-calculator, /sand-calculator to /tools/* if accessed directly
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.pathname === '/paint-calculator') {
-      window.history.replaceState({}, '', '/tools/paint-calculator');
+    if (typeof window !== 'undefined') {
+      if (window.location.pathname === '/paint-calculator') {
+        window.history.replaceState({}, '', '/tools/paint-calculator');
+      } else if (window.location.pathname === '/gravel-calculator') {
+        window.history.replaceState({}, '', '/tools/gravel-calculator');
+      } else if (window.location.pathname === '/sand-calculator') {
+        window.history.replaceState({}, '', '/tools/sand-calculator');
+      }
     }
   }, []);
 
@@ -122,6 +150,12 @@ function AppContent() {
       case '/tools/paint-calculator':
       case '/paint-calculator':
         return <PaintCalculatorPage />;
+      case '/tools/gravel-calculator':
+      case '/gravel-calculator':
+        return <GravelCalculatorPage />;
+      case '/tools/sand-calculator':
+      case '/sand-calculator':
+        return <SandCalculatorPage />;
       case '/tools':
         return <ToolsPage />;
       case '/guides':
