@@ -1,5 +1,6 @@
 import { useState, useId, FormEvent, useEffect, ChangeEvent } from 'react';
-import { Ruler, DoorClosed, Paintbrush, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Ruler, DoorClosed, Paintbrush, CheckCircle2, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react';
+import { Link } from '../context/NavigationContext';
 
 type UnitSystem = 'metric' | 'us';
 type MeasureMethod = 'room' | 'area';
@@ -497,7 +498,7 @@ export function PaintCalculatorPage() {
           Paint Calculator
         </h1>
         <p className="text-base sm:text-lg text-[#4E4942] leading-relaxed font-sans">
-          Calculate how much paint you need.
+          Find out how much paint you need for your walls and ceiling. Enter your room dimensions, doors and windows, number of coats, and paint coverage to get a simple estimate.
         </p>
       </div>
 
@@ -1214,7 +1215,7 @@ export function PaintCalculatorPage() {
               aria-expanded={showDetails}
               aria-controls="calculation-details-panel"
             >
-              <span>{showDetails ? 'Hide breakdown' : 'View breakdown'}</span>
+              <span>{showDetails ? 'Hide calculation details' : 'View calculation details'}</span>
               {showDetails ? (
                 <ChevronUp className="w-3.5 h-3.5" />
               ) : (
@@ -1293,6 +1294,47 @@ export function PaintCalculatorPage() {
           )}
         </section>
       )}
+
+      {/* SEO Explanatory Content */}
+      <section aria-labelledby="how-much-paint-heading" className="mt-10 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
+        <h2
+          id="how-much-paint-heading"
+          className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
+        >
+          How much paint do I need?
+        </h2>
+        <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
+          This room paint calculator estimates how much paint you need based on your wall and ceiling area, number of coats, doors and windows, and paint coverage. It also adds extra paint for waste and touch-ups.
+        </p>
+      </section>
+
+      <section aria-labelledby="how-it-works-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
+        <h2
+          id="how-it-works-heading"
+          className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
+        >
+          How the paint calculator works
+        </h2>
+        <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
+          Enter your room measurements, choose how many coats you need, and add any doors or windows. The calculator works out the paintable area, then tells you how much paint you need and how much to buy.
+        </p>
+      </section>
+
+      {/* Internal Navigation Link */}
+      <section aria-label="Explore more tools" className="mt-6">
+        <div className="p-5 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <span className="text-sm text-[#4E4942] font-sans">
+            Need to estimate materials for another project?
+          </span>
+          <Link
+            href="/tools"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#163A5F] hover:underline shrink-0"
+          >
+            <span>Explore more calculators</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </section>
     </main>
   );
 }
