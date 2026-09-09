@@ -10,6 +10,7 @@ import { ContactPage } from './pages/ContactPage';
 import { PaintCalculatorPage } from './pages/PaintCalculatorPage';
 import { GravelCalculatorPage } from './pages/GravelCalculatorPage';
 import { SandCalculatorPage } from './pages/SandCalculatorPage';
+import { FlooringCalculatorPage } from './pages/FlooringCalculatorPage';
 
 interface PageMetadata {
   title: string;
@@ -29,6 +30,16 @@ const ROUTE_METADATA: Record<string, PageMetadata> = {
     title: 'Measurely Tools — Material Calculators',
     description: 'Browse simple, practical material calculators for your home and DIY projects.',
     canonical: `${PRODUCTION_DOMAIN}/tools`,
+  },
+  '/tools/flooring-calculator': {
+    title: 'Flooring Calculator — How Much Flooring Do I Need? | Measurely',
+    description: 'Use the Measurely flooring calculator to find how much flooring you need for a room or floor area. Calculate floor area and add extra material for cuts and waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/flooring-calculator`,
+  },
+  '/flooring-calculator': {
+    title: 'Flooring Calculator — How Much Flooring Do I Need? | Measurely',
+    description: 'Use the Measurely flooring calculator to find how much flooring you need for a room or floor area. Calculate floor area and add extra material for cuts and waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/flooring-calculator`,
   },
   '/tools/paint-calculator': {
     title: 'Paint Calculator — How Much Paint Do I Need? | Measurely',
@@ -80,7 +91,7 @@ const ROUTE_METADATA: Record<string, PageMetadata> = {
 function AppContent() {
   const { currentPath } = useNavigation();
 
-  // Normalize /paint-calculator, /gravel-calculator, /sand-calculator to /tools/* if accessed directly
+  // Normalize /paint-calculator, /gravel-calculator, /sand-calculator, /flooring-calculator to /tools/* if accessed directly
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (window.location.pathname === '/paint-calculator') {
@@ -89,6 +100,8 @@ function AppContent() {
         window.history.replaceState({}, '', '/tools/gravel-calculator');
       } else if (window.location.pathname === '/sand-calculator') {
         window.history.replaceState({}, '', '/tools/sand-calculator');
+      } else if (window.location.pathname === '/flooring-calculator') {
+        window.history.replaceState({}, '', '/tools/flooring-calculator');
       }
     }
   }, []);
@@ -147,6 +160,9 @@ function AppContent() {
   // Route matching
   const renderCurrentPage = () => {
     switch (currentPath) {
+      case '/tools/flooring-calculator':
+      case '/flooring-calculator':
+        return <FlooringCalculatorPage />;
       case '/tools/paint-calculator':
       case '/paint-calculator':
         return <PaintCalculatorPage />;

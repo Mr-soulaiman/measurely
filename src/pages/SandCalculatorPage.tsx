@@ -1,9 +1,10 @@
 import { useState, useId, FormEvent, useEffect, ChangeEvent } from 'react';
-import { ChevronDown, ChevronUp, ArrowRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, ArrowRight, FileDown } from 'lucide-react';
 import { Link } from '../context/NavigationContext';
+import { exportBulkMaterialPdf } from '../utils/pdfExport';
 
 type UnitSystem = 'metric' | 'us';
-type MeasureMethod = 'rectangle' | 'circle';
+type MeasureMethod = 'rectangle' | 'circle' | 'custom';
 
 interface CalculationResult {
   area: number;
@@ -42,6 +43,7 @@ export function SandCalculatorPage() {
   const [length, setLength] = useState<string>('4');
   const [width, setWidth] = useState<string>('3');
   const [diameter, setDiameter] = useState<string>('3');
+  const [customArea, setCustomArea] = useState<string>('12');
   const [depth, setDepth] = useState<string>('5');
   const [extraSand, setExtraSand] = useState<'0' | '5' | '10' | '15'>('10');
 
@@ -49,11 +51,13 @@ export function SandCalculatorPage() {
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState<boolean>(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
 
   // Unique IDs for accessibility
   const lengthId = useId();
   const widthId = useId();
   const diameterId = useId();
+  const areaId = useId();
   const depthId = useId();
 
   const isMetric = unitSystem === 'metric';
@@ -67,22 +71,26 @@ export function SandCalculatorPage() {
       const l = parseFloat(length);
       const w = parseFloat(width);
       const dia = parseFloat(diameter);
+      const ca = parseFloat(customArea);
       const d = parseFloat(depth);
 
       if (!isNaN(l) && l > 0) setLength((Math.round(l * 3.28084 * 10) / 10).toString());
       if (!isNaN(w) && w > 0) setWidth((Math.round(w * 3.28084 * 10) / 10).toString());
       if (!isNaN(dia) && dia > 0) setDiameter((Math.round(dia * 3.28084 * 10) / 10).toString());
+      if (!isNaN(ca) && ca > 0) setCustomArea((Math.round(ca * 10.7639 * 10) / 10).toString());
       if (!isNaN(d) && d > 0) setDepth((Math.round((d / 2.54) * 10) / 10).toString());
     } else {
       // US to Metric
       const l = parseFloat(length);
       const w = parseFloat(width);
       const dia = parseFloat(diameter);
+      const ca = parseFloat(customArea);
       const d = parseFloat(depth);
 
       if (!isNaN(l) && l > 0) setLength((Math.round((l / 3.28084) * 10) / 10).toString());
       if (!isNaN(w) && w > 0) setWidth((Math.round((w / 3.28084) * 10) / 10).toString());
       if (!isNaN(dia) && dia > 0) setDiameter((Math.round((dia / 3.28084) * 10) / 10).toString());
+      if (!isNaN(ca) && ca > 0) setCustomArea((Math.round((ca / 10.7639) * 10) / 10).toString());
       if (!isNaN(d) && d > 0) setDepth((Math.round(d * 2.54 * 10) / 10).toString());
     }
 
@@ -96,6 +104,7 @@ export function SandCalculatorPage() {
     lenVal: string,
     widVal: string,
     diaVal: string,
+    customAreaVal: string,
     depVal: string,
     extraVal: string
   ): CalculationResult | null => {
@@ -115,13 +124,19 @@ export function SandCalculatorPage() {
         return null;
       }
       area = l * w;
-    } else {
+    } else if (currentMethod === 'circle') {
       const dia = parseFloat(diaVal);
       if (isNaN(dia) || dia <= 0) {
         return null;
       }
       const radius = dia / 2;
       area = Math.PI * radius * radius;
+    } else {
+      const ca = parseFloat(customAreaVal);
+      if (isNaN(ca) || ca <= 0) {
+        return null;
+      }
+      area = ca;
     }
 
     if (area <= 0) return null;
@@ -195,23 +210,25 @@ export function SandCalculatorPage() {
 
   // Recalculate live when any input changes
   useEffect(() => {
-    const res = calculateSand(unitSystem, method, length, width, diameter, depth, extraSand);
+    const res = calculateSand(unitSystem, method, length, width, diameter, customArea, depth, extraSand);
     if (res) {
       setResult(res);
       setError(null);
     }
-  }, [unitSystem, method, length, width, diameter, depth, extraSand]);
+  }, [unitSystem, method, length, width, diameter, customArea, depth, extraSand]);
 
   // Form submit handler with validation and smooth scrolling
   const handleCalculate = (e: FormEvent) => {
     e.preventDefault();
 
-    const res = calculateSand(unitSystem, method, length, width, diameter, depth, extraSand);
+    const res = calculateSand(unitSystem, method, length, width, diameter, customArea, depth, extraSand);
     if (!res) {
       if (method === 'rectangle') {
         setError('Please enter a valid length, width, and depth greater than 0.');
-      } else {
+      } else if (method === 'circle') {
         setError('Please enter a valid diameter and depth greater than 0.');
+      } else {
+        setError('Please enter a valid area and depth greater than 0.');
       }
       setResult(null);
       return;
@@ -231,6 +248,30 @@ export function SandCalculatorPage() {
     const val = e.target.value;
     if (val === '' || (!val.includes('-') && !isNaN(Number(val)))) {
       setter(val);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!result) return;
+    try {
+      setIsGeneratingPdf(true);
+      await exportBulkMaterialPdf({
+        toolName: 'Sand Calculator',
+        materialType: 'sand',
+        unitSystem,
+        method,
+        length: method === 'rectangle' ? length : undefined,
+        width: method === 'rectangle' ? width : undefined,
+        diameter: method === 'circle' ? diameter : undefined,
+        customArea: method === 'custom' ? customArea : undefined,
+        depth,
+        extraPercent: extraSand,
+        result,
+      });
+    } catch (err) {
+      console.error('Failed to export Sand calculation PDF:', err);
+    } finally {
+      setIsGeneratingPdf(false);
     }
   };
 
@@ -293,7 +334,7 @@ export function SandCalculatorPage() {
             <div
               role="radiogroup"
               aria-label="Area shape"
-              className="grid grid-cols-2 p-1 rounded-xl bg-[#F5EFE6] border border-[#DFD5C6]"
+              className="grid grid-cols-3 p-1 rounded-xl bg-[#F5EFE6] border border-[#DFD5C6]"
             >
               <button
                 id="shape-rectangle-btn"
@@ -301,7 +342,7 @@ export function SandCalculatorPage() {
                 role="radio"
                 aria-checked={method === 'rectangle'}
                 onClick={() => setMethod('rectangle')}
-                className={`min-h-[42px] py-2 px-3 rounded-lg text-xs sm:text-sm font-sans font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`min-h-[42px] py-2 px-2.5 rounded-lg text-xs sm:text-sm font-sans font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer ${
                   method === 'rectangle'
                     ? 'bg-[#FFFFFF] text-[#163A5F] shadow-xs border border-[#E0D5C7]'
                     : 'text-[#6E675E] hover:text-[#1A1918]'
@@ -315,13 +356,27 @@ export function SandCalculatorPage() {
                 role="radio"
                 aria-checked={method === 'circle'}
                 onClick={() => setMethod('circle')}
-                className={`min-h-[42px] py-2 px-3 rounded-lg text-xs sm:text-sm font-sans font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`min-h-[42px] py-2 px-2.5 rounded-lg text-xs sm:text-sm font-sans font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer ${
                   method === 'circle'
                     ? 'bg-[#FFFFFF] text-[#163A5F] shadow-xs border border-[#E0D5C7]'
                     : 'text-[#6E675E] hover:text-[#1A1918]'
                 }`}
               >
                 <span>Circle</span>
+              </button>
+              <button
+                id="shape-custom-btn"
+                type="button"
+                role="radio"
+                aria-checked={method === 'custom'}
+                onClick={() => setMethod('custom')}
+                className={`min-h-[42px] py-2 px-2.5 rounded-lg text-xs sm:text-sm font-sans font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer ${
+                  method === 'custom'
+                    ? 'bg-[#FFFFFF] text-[#163A5F] shadow-xs border border-[#E0D5C7]'
+                    : 'text-[#6E675E] hover:text-[#1A1918]'
+                }`}
+              >
+                <span>Custom area</span>
               </button>
             </div>
           </div>
@@ -380,7 +435,7 @@ export function SandCalculatorPage() {
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : method === 'circle' ? (
               /* Circle: Diameter */
               <div className="space-y-1.5">
                 <label
@@ -403,6 +458,37 @@ export function SandCalculatorPage() {
                   <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6E675E] pointer-events-none">
                     {isMetric ? 'm' : 'ft'}
                   </span>
+                </div>
+              </div>
+            ) : (
+              /* Custom Area */
+              <div className="space-y-2">
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor={areaId}
+                    className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans"
+                  >
+                    Area
+                  </label>
+                  <div className="relative">
+                    <input
+                      id={areaId}
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder={isMetric ? 'e.g. 12' : 'e.g. 120'}
+                      value={customArea}
+                      onChange={handlePositiveInput(setCustomArea)}
+                      className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-12 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
+                    />
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6E675E] pointer-events-none">
+                      {isMetric ? 'm²' : 'ft²'}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-1 text-xs text-[#6E675E] font-sans leading-relaxed">
+                  <p>For irregular or multiple areas, enter the total area you want to cover.</p>
+                  <p>Measure each section separately and add the areas together.</p>
                 </div>
               </div>
             )}
@@ -624,6 +710,20 @@ export function SandCalculatorPage() {
               </div>
             </div>
           )}
+
+          {/* Download PDF button below the final result */}
+          <div className="pt-2 border-t border-[#EAE0D5]">
+            <button
+              id="download-pdf-btn"
+              type="button"
+              onClick={handleDownloadPdf}
+              disabled={isGeneratingPdf}
+              className="w-full min-h-[46px] py-3 px-5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#DDD3C5] text-[#163A5F] font-sans font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xs hover:border-[#163A5F]/30 active:scale-[0.99] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <FileDown className="w-4 h-4 text-[#163A5F]" />
+              <span>{isGeneratingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
+            </button>
+          </div>
         </section>
       )}
 

@@ -1,6 +1,7 @@
 import { useState, useId, FormEvent, useEffect, ChangeEvent } from 'react';
-import { Ruler, DoorClosed, Paintbrush, CheckCircle2, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react';
+import { Ruler, DoorClosed, Paintbrush, CheckCircle2, ChevronDown, ChevronUp, ArrowRight, FileDown } from 'lucide-react';
 import { Link } from '../context/NavigationContext';
+import { exportPaintCalculatorPdf } from '../utils/pdfExport';
 
 type UnitSystem = 'metric' | 'us';
 type MeasureMethod = 'room' | 'area';
@@ -131,6 +132,7 @@ export function PaintCalculatorPage() {
   const [error, setError] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState<boolean>(false);
   const [highlightResult, setHighlightResult] = useState<boolean>(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
 
   const roomLengthId = useId();
   const roomWidthId = useId();
@@ -488,6 +490,38 @@ export function PaintCalculatorPage() {
     setWindowWidth(nextWinW);
     setWindowHeight(nextWinH);
     setCoverage(nextCov);
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!result) return;
+    try {
+      setIsGeneratingPdf(true);
+      const effectiveWaste = isCustomWaste ? customWasteValue : wasteAllowance;
+      await exportPaintCalculatorPdf({
+        unitSystem,
+        measureMethod,
+        roomLength: measureMethod === 'room' ? roomLength : undefined,
+        roomWidth: measureMethod === 'room' ? roomWidth : undefined,
+        wallHeight: measureMethod === 'room' ? wallHeight : undefined,
+        directWallArea: measureMethod === 'area' ? directWallArea : undefined,
+        coats,
+        coverage,
+        includeCeiling,
+        ceilingArea: customCeilingArea,
+        doorCount,
+        doorWidth: hasDoors ? doorWidth : undefined,
+        doorHeight: hasDoors ? doorHeight : undefined,
+        windowCount,
+        windowWidth: hasWindows ? windowWidth : undefined,
+        windowHeight: hasWindows ? windowHeight : undefined,
+        wasteAllowance: effectiveWaste,
+        result,
+      });
+    } catch (err) {
+      console.error('Failed to export Paint calculation PDF:', err);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   return (
@@ -1292,6 +1326,20 @@ export function PaintCalculatorPage() {
               </div>
             </div>
           )}
+
+          {/* Download PDF button below the final result */}
+          <div className="pt-2 border-t border-[#EAE0D5]">
+            <button
+              id="download-pdf-btn"
+              type="button"
+              onClick={handleDownloadPdf}
+              disabled={isGeneratingPdf}
+              className="w-full min-h-[46px] py-3 px-5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#DDD3C5] text-[#163A5F] font-sans font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xs hover:border-[#163A5F]/30 active:scale-[0.99] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <FileDown className="w-4 h-4 text-[#163A5F]" />
+              <span>{isGeneratingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
+            </button>
+          </div>
         </section>
       )}
 

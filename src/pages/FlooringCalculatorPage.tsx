@@ -1,234 +1,163 @@
-import { useState, useId, FormEvent, useEffect, ChangeEvent } from 'react';
-import { ChevronDown, ChevronUp, ArrowRight, FileDown } from 'lucide-react';
+import { useState, useEffect, useId, FormEvent, ChangeEvent } from 'react';
+import { ArrowRight, ChevronDown, ChevronUp, FileDown, Info } from 'lucide-react';
 import { Link } from '../context/NavigationContext';
-import { exportBulkMaterialPdf } from '../utils/pdfExport';
+import { exportFlooringCalculatorPdf } from '../utils/pdfExport';
 
 type UnitSystem = 'metric' | 'us';
 type MeasureMethod = 'rectangle' | 'circle' | 'custom';
+type ExtraWastePercent = '0' | '5' | '10' | '15';
 
-interface CalculationResult {
-  area: number;
-  depth: number;
-  depthUnit: 'cm' | 'in';
-  areaUnit: 'm²' | 'sq ft';
-  baseVolume: number;
-  extraVolume: number;
-  recommendedVolume: number;
+interface FlooringCalculationResult {
+  floorArea: number;
+  extraArea: number;
+  recommendedArea: number;
   extraPercent: number;
-  unitLabel: 'm³' | 'cubic yards';
-  equivalentVolume: number;
-  equivalentUnit: 'cubic yards' | 'm³';
-  baseWeight: number;
-  recommendedWeight: number;
-  weightUnit: 'tonnes' | 'tons';
+  lenUnit: 'm' | 'ft';
+  areaUnit: 'm²' | 'sq ft';
 }
 
-function formatVolumeDisplay(val: number): string {
+function formatAreaDisplay(val: number): string {
   if (val <= 0 || isNaN(val)) return '0';
   const rounded = Math.round(val * 100) / 100;
-  return rounded % 1 === 0 ? rounded.toFixed(1) : rounded.toString();
+  return rounded.toString();
 }
 
-function formatWeightDisplay(val: number): string {
-  if (val <= 0 || isNaN(val)) return '0';
-  const rounded = Math.round(val * 10) / 10;
-  return rounded % 1 === 0 ? rounded.toFixed(1) : rounded.toString();
-}
-
-export function GravelCalculatorPage() {
+export function FlooringCalculatorPage() {
   const [unitSystem, setUnitSystem] = useState<UnitSystem>('metric');
   const [method, setMethod] = useState<MeasureMethod>('rectangle');
-
-  // Input states
-  const [length, setLength] = useState<string>('6');
-  const [width, setWidth] = useState<string>('3');
+  const [length, setLength] = useState<string>('5');
+  const [width, setWidth] = useState<string>('4');
   const [diameter, setDiameter] = useState<string>('4');
-  const [customArea, setCustomArea] = useState<string>('18');
-  const [depth, setDepth] = useState<string>('5');
-  const [extraGravel, setExtraGravel] = useState<'0' | '5' | '10' | '15'>('10');
-
-  // Result & UI state
-  const [result, setResult] = useState<CalculationResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [customArea, setCustomArea] = useState<string>('20');
+  const [extraWaste, setExtraWaste] = useState<ExtraWastePercent>('10');
   const [showDetails, setShowDetails] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<FlooringCalculationResult | null>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
 
-  // Unique IDs for accessibility
   const lengthId = useId();
   const widthId = useId();
   const diameterId = useId();
   const areaId = useId();
-  const depthId = useId();
 
   const isMetric = unitSystem === 'metric';
+  const lenUnit = isMetric ? 'm' : 'ft';
+  const areaUnit = isMetric ? 'm²' : 'sq ft';
 
-  // Handle switching unit systems with value conversion
-  const handleUnitChange = (newSystem: UnitSystem) => {
-    if (newSystem === unitSystem) return;
+  // Unit conversion handler
+  const handleUnitChange = (nextSystem: UnitSystem) => {
+    if (nextSystem === unitSystem) return;
 
-    if (newSystem === 'us') {
-      // Metric to US
-      const l = parseFloat(length);
-      const w = parseFloat(width);
-      const dia = parseFloat(diameter);
-      const ca = parseFloat(customArea);
-      const d = parseFloat(depth);
-
-      if (!isNaN(l) && l > 0) setLength((Math.round(l * 3.28084 * 10) / 10).toString());
-      if (!isNaN(w) && w > 0) setWidth((Math.round(w * 3.28084 * 10) / 10).toString());
-      if (!isNaN(dia) && dia > 0) setDiameter((Math.round(dia * 3.28084 * 10) / 10).toString());
-      if (!isNaN(ca) && ca > 0) setCustomArea((Math.round(ca * 10.7639 * 10) / 10).toString());
-      if (!isNaN(d) && d > 0) setDepth((Math.round((d / 2.54) * 10) / 10).toString());
+    if (nextSystem === 'us') {
+      // Metric -> US (m -> ft: multiply by 3.28084)
+      if (length && !isNaN(Number(length))) {
+        const val = Number(length) * 3.28084;
+        setLength((Math.round(val * 10) / 10).toString());
+      }
+      if (width && !isNaN(Number(width))) {
+        const val = Number(width) * 3.28084;
+        setWidth((Math.round(val * 10) / 10).toString());
+      }
+      if (diameter && !isNaN(Number(diameter))) {
+        const val = Number(diameter) * 3.28084;
+        setDiameter((Math.round(val * 10) / 10).toString());
+      }
+      if (customArea && !isNaN(Number(customArea))) {
+        const val = Number(customArea) * 10.7639;
+        setCustomArea((Math.round(val * 10) / 10).toString());
+      }
     } else {
-      // US to Metric
-      const l = parseFloat(length);
-      const w = parseFloat(width);
-      const dia = parseFloat(diameter);
-      const ca = parseFloat(customArea);
-      const d = parseFloat(depth);
-
-      if (!isNaN(l) && l > 0) setLength((Math.round((l / 3.28084) * 10) / 10).toString());
-      if (!isNaN(w) && w > 0) setWidth((Math.round((w / 3.28084) * 10) / 10).toString());
-      if (!isNaN(dia) && dia > 0) setDiameter((Math.round((dia / 3.28084) * 10) / 10).toString());
-      if (!isNaN(ca) && ca > 0) setCustomArea((Math.round((ca / 10.7639) * 10) / 10).toString());
-      if (!isNaN(d) && d > 0) setDepth((Math.round(d * 2.54 * 10) / 10).toString());
+      // US -> Metric (ft -> m: divide by 3.28084)
+      if (length && !isNaN(Number(length))) {
+        const val = Number(length) / 3.28084;
+        setLength((Math.round(val * 10) / 10).toString());
+      }
+      if (width && !isNaN(Number(width))) {
+        const val = Number(width) / 3.28084;
+        setWidth((Math.round(val * 10) / 10).toString());
+      }
+      if (diameter && !isNaN(Number(diameter))) {
+        const val = Number(diameter) / 3.28084;
+        setDiameter((Math.round(val * 10) / 10).toString());
+      }
+      if (customArea && !isNaN(Number(customArea))) {
+        const val = Number(customArea) / 10.7639;
+        setCustomArea((Math.round(val * 10) / 10).toString());
+      }
     }
 
-    setUnitSystem(newSystem);
+    setUnitSystem(nextSystem);
   };
 
-  // Calculation core function
-  const calculateGravel = (
-    currentUnit: UnitSystem,
+  // Pure calculation logic
+  const calculateFlooring = (
     currentMethod: MeasureMethod,
-    lenVal: string,
-    widVal: string,
-    diaVal: string,
-    customAreaVal: string,
-    depVal: string,
-    extraVal: string
-  ): CalculationResult | null => {
-    const d = parseFloat(depVal);
-    const extraPct = parseFloat(extraVal) || 0;
-
-    if (isNaN(d) || d <= 0) {
-      return null;
-    }
-
-    let area = 0;
+    lStr: string,
+    wStr: string,
+    diaStr: string,
+    customAreaStr: string,
+    wastePctStr: ExtraWastePercent
+  ): FlooringCalculationResult | null => {
+    let baseArea = 0;
 
     if (currentMethod === 'rectangle') {
-      const l = parseFloat(lenVal);
-      const w = parseFloat(widVal);
+      const l = parseFloat(lStr);
+      const w = parseFloat(wStr);
       if (isNaN(l) || isNaN(w) || l <= 0 || w <= 0) {
         return null;
       }
-      area = l * w;
+      baseArea = l * w;
     } else if (currentMethod === 'circle') {
-      const dia = parseFloat(diaVal);
+      const dia = parseFloat(diaStr);
       if (isNaN(dia) || dia <= 0) {
         return null;
       }
       const radius = dia / 2;
-      area = Math.PI * radius * radius;
+      baseArea = Math.PI * radius * radius;
     } else {
-      const ca = parseFloat(customAreaVal);
+      const ca = parseFloat(customAreaStr);
       if (isNaN(ca) || ca <= 0) {
         return null;
       }
-      area = ca;
+      baseArea = ca;
     }
 
-    if (area <= 0) return null;
+    if (baseArea <= 0) return null;
 
-    let baseVol = 0;
-    let unitLabel: 'm³' | 'cubic yards' = 'm³';
-    let equivVol = 0;
-    let equivUnit: 'cubic yards' | 'm³' = 'cubic yards';
-    const areaUnit: 'm²' | 'sq ft' = currentUnit === 'metric' ? 'm²' : 'sq ft';
-    const depthUnit: 'cm' | 'in' = currentUnit === 'metric' ? 'cm' : 'in';
-
-    if (currentUnit === 'metric') {
-      // Depth in cm -> meters
-      const depthMeters = d / 100;
-      baseVol = area * depthMeters; // m³
-      unitLabel = 'm³';
-      // 1 m³ = 1.30795 cubic yards
-      equivVol = baseVol * 1.30795;
-      equivUnit = 'cubic yards';
-    } else {
-      // Depth in inches -> feet
-      const depthFeet = d / 12;
-      const volumeCuFt = area * depthFeet; // cubic feet
-      baseVol = volumeCuFt / 27; // cubic yards
-      unitLabel = 'cubic yards';
-      // 1 cubic yard = 1 / 1.30795 m³
-      equivVol = baseVol / 1.30795;
-      equivUnit = 'm³';
-    }
-
-    const extraVol = baseVol * (extraPct / 100);
-    const recVol = baseVol + extraVol;
-
-    // Weight calculation using bulk gravel density of 1,600 kg/m³
-    let baseWeight = 0;
-    let recWeight = 0;
-    let weightUnit: 'tonnes' | 'tons' = 'tonnes';
-
-    if (currentUnit === 'metric') {
-      // Metric: 1 m³ = 1,600 kg = 1.6 tonnes
-      baseWeight = baseVol * 1.6;
-      recWeight = recVol * 1.6;
-      weightUnit = 'tonnes';
-    } else {
-      // US: Convert volume to cubic yards -> m³ -> kg -> lbs -> short tons (2,000 lbs)
-      // 1 cubic yard = 1 / 1.30795 m³
-      // 1 m³ = 1,600 kg; 1 kg = 2.20462262 lbs
-      const tonsPerCubicYard = (1600 / 1.30795) * (2.20462262 / 2000);
-      baseWeight = baseVol * tonsPerCubicYard;
-      recWeight = recVol * tonsPerCubicYard;
-      weightUnit = 'tons';
-    }
+    const wastePercent = parseFloat(wastePctStr);
+    const wasteFactor = wastePercent / 100;
+    const extra = baseArea * wasteFactor;
+    const recommended = baseArea * (1 + wasteFactor);
 
     return {
-      area,
-      depth: d,
-      depthUnit,
+      floorArea: Math.round(baseArea * 100) / 100,
+      extraArea: Math.round(extra * 100) / 100,
+      recommendedArea: Math.round(recommended * 100) / 100,
+      extraPercent: wastePercent,
+      lenUnit,
       areaUnit,
-      baseVolume: baseVol,
-      extraVolume: extraVol,
-      recommendedVolume: recVol,
-      extraPercent: extraPct,
-      unitLabel,
-      equivalentVolume: equivVol,
-      equivalentUnit: equivUnit,
-      baseWeight,
-      recommendedWeight: recWeight,
-      weightUnit,
     };
   };
 
-  // Recalculate live when any input changes
+  // Live recalculate
   useEffect(() => {
-    const res = calculateGravel(unitSystem, method, length, width, diameter, customArea, depth, extraGravel);
+    const res = calculateFlooring(method, length, width, diameter, customArea, extraWaste);
     if (res) {
       setResult(res);
       setError(null);
     }
-  }, [unitSystem, method, length, width, diameter, customArea, depth, extraGravel]);
+  }, [method, length, width, diameter, customArea, extraWaste, unitSystem]);
 
-  // Form submit handler with validation and smooth scrolling
   const handleCalculate = (e: FormEvent) => {
     e.preventDefault();
-
-    const res = calculateGravel(unitSystem, method, length, width, diameter, customArea, depth, extraGravel);
+    const res = calculateFlooring(method, length, width, diameter, customArea, extraWaste);
     if (!res) {
       if (method === 'rectangle') {
-        setError('Please enter a valid length, width, and depth greater than 0.');
+        setError('Please enter a valid length and width greater than 0.');
       } else if (method === 'circle') {
-        setError('Please enter a valid diameter and depth greater than 0.');
+        setError('Please enter a valid diameter greater than 0.');
       } else {
-        setError('Please enter a valid area and depth greater than 0.');
+        setError('Please enter a valid area greater than 0.');
       }
       setResult(null);
       return;
@@ -255,21 +184,18 @@ export function GravelCalculatorPage() {
     if (!result) return;
     try {
       setIsGeneratingPdf(true);
-      await exportBulkMaterialPdf({
-        toolName: 'Gravel Calculator',
-        materialType: 'gravel',
+      await exportFlooringCalculatorPdf({
         unitSystem,
         method,
         length: method === 'rectangle' ? length : undefined,
         width: method === 'rectangle' ? width : undefined,
         diameter: method === 'circle' ? diameter : undefined,
         customArea: method === 'custom' ? customArea : undefined,
-        depth,
-        extraPercent: extraGravel,
+        extraPercent: extraWaste,
         result,
       });
     } catch (err) {
-      console.error('Failed to export Gravel calculation PDF:', err);
+      console.error('Failed to export Flooring calculation PDF:', err);
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -280,10 +206,10 @@ export function GravelCalculatorPage() {
       {/* 1. Title & Intro */}
       <div className="mb-6">
         <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-display font-extrabold text-[#1A1918] tracking-tight leading-tight mb-2.5">
-          Gravel Calculator
+          Flooring Calculator
         </h1>
         <p className="text-base sm:text-lg text-[#4E4942] leading-relaxed font-sans">
-          Find out how much gravel you need for a driveway, path, garden, patio, or landscaping project. Enter your area and gravel depth to get the volume and estimated weight you need.
+          Find out how much flooring you need for a room or floor area. Enter your room dimensions or custom area and add extra material for cuts and waste.
         </p>
       </div>
 
@@ -293,7 +219,7 @@ export function GravelCalculatorPage() {
           <button
             id="unit-metric-btn"
             type="button"
-            aria-label="Switch to Metric units (metres, centimetres, cubic metres)"
+            aria-label="Switch to Metric units (metres, square metres)"
             aria-pressed={isMetric}
             onClick={() => handleUnitChange('metric')}
             className={`min-h-[46px] py-2.5 px-3.5 text-xs sm:text-sm md:text-base font-mono tracking-wider uppercase rounded-lg transition-all duration-150 cursor-pointer flex items-center justify-center gap-2 ${
@@ -308,7 +234,7 @@ export function GravelCalculatorPage() {
           <button
             id="unit-us-btn"
             type="button"
-            aria-label="Switch to US Imperial units (feet, inches, cubic yards)"
+            aria-label="Switch to US Imperial units (feet, square feet)"
             aria-pressed={!isMetric}
             onClick={() => handleUnitChange('us')}
             className={`min-h-[46px] py-2.5 px-3.5 text-xs sm:text-sm md:text-base font-mono tracking-wider uppercase rounded-lg transition-all duration-150 cursor-pointer flex items-center justify-center gap-2 ${
@@ -324,7 +250,7 @@ export function GravelCalculatorPage() {
       </section>
 
       {/* 3. Form Workspace */}
-      <form onSubmit={handleCalculate} aria-label="Gravel calculation form" className="space-y-6">
+      <form onSubmit={handleCalculate} aria-label="Flooring calculation form" className="space-y-6">
         <div className="bg-[#FFFFFF] border border-[#E6DDD1] rounded-2xl p-6 sm:p-8 shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-6">
           {/* Measurement Method Selector */}
           <div className="space-y-2.5 pb-4 border-b border-[#EAE0D5]">
@@ -391,7 +317,7 @@ export function GravelCalculatorPage() {
                     htmlFor={lengthId}
                     className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans"
                   >
-                    Length
+                    Floor length
                   </label>
                   <div className="relative">
                     <input
@@ -399,13 +325,13 @@ export function GravelCalculatorPage() {
                       type="number"
                       step="any"
                       min="0"
-                      placeholder={isMetric ? 'e.g. 6' : 'e.g. 20'}
+                      placeholder={isMetric ? 'e.g. 5' : 'e.g. 16'}
                       value={length}
                       onChange={handlePositiveInput(setLength)}
                       className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-10 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
                     />
                     <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6E675E] pointer-events-none">
-                      {isMetric ? 'm' : 'ft'}
+                      {lenUnit}
                     </span>
                   </div>
                 </div>
@@ -416,7 +342,7 @@ export function GravelCalculatorPage() {
                     htmlFor={widthId}
                     className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans"
                   >
-                    Width
+                    Floor width
                   </label>
                   <div className="relative">
                     <input
@@ -424,13 +350,13 @@ export function GravelCalculatorPage() {
                       type="number"
                       step="any"
                       min="0"
-                      placeholder={isMetric ? 'e.g. 3' : 'e.g. 10'}
+                      placeholder={isMetric ? 'e.g. 4' : 'e.g. 12'}
                       value={width}
                       onChange={handlePositiveInput(setWidth)}
                       className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-10 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
                     />
                     <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6E675E] pointer-events-none">
-                      {isMetric ? 'm' : 'ft'}
+                      {lenUnit}
                     </span>
                   </div>
                 </div>
@@ -456,7 +382,7 @@ export function GravelCalculatorPage() {
                     className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-10 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
                   />
                   <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6E675E] pointer-events-none">
-                    {isMetric ? 'm' : 'ft'}
+                    {lenUnit}
                   </span>
                 </div>
               </div>
@@ -476,72 +402,46 @@ export function GravelCalculatorPage() {
                       type="number"
                       step="any"
                       min="0"
-                      placeholder={isMetric ? 'e.g. 18' : 'e.g. 200'}
+                      placeholder={isMetric ? 'e.g. 20' : 'e.g. 200'}
                       value={customArea}
                       onChange={handlePositiveInput(setCustomArea)}
                       className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-12 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
                     />
                     <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6E675E] pointer-events-none">
-                      {isMetric ? 'm²' : 'ft²'}
+                      {areaUnit}
                     </span>
                   </div>
                 </div>
                 <div className="space-y-1 text-xs text-[#6E675E] font-sans leading-relaxed">
-                  <p>For irregular or multiple areas, enter the total area you want to cover.</p>
+                  <p>For irregular rooms or multiple areas, enter the total floor area you want to cover.</p>
                   <p>Measure each section separately and add the areas together.</p>
                 </div>
               </div>
             )}
-
-            {/* Depth Input */}
-            <div className="space-y-1.5">
-              <label
-                htmlFor={depthId}
-                className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans"
-              >
-                Depth
-              </label>
-              <div className="relative">
-                <input
-                  id={depthId}
-                  type="number"
-                  step="any"
-                  min="0"
-                  placeholder={isMetric ? 'e.g. 5' : 'e.g. 2'}
-                  value={depth}
-                  onChange={handlePositiveInput(setDepth)}
-                  className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-12 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
-                />
-                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6E675E] pointer-events-none">
-                  {isMetric ? 'cm' : 'in'}
-                </span>
-              </div>
-              <p className="text-xs text-[#6E675E] font-sans">
-                {isMetric ? 'Typical depth: 4–5 cm for paths, 7–10 cm for driveways.' : 'Typical depth: 2 in for walkways, 3–4 in for driveways.'}
-              </p>
-            </div>
           </div>
 
-          {/* Extra Gravel Selector */}
+          {/* Extra material / waste Selector */}
           <div className="pt-2 border-t border-[#EAE0D5] space-y-2">
-            <label className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans">
-              Extra gravel
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans">
+                Extra material / waste
+              </label>
+            </div>
             <div
               role="radiogroup"
-              aria-label="Extra gravel percentage"
+              aria-label="Extra material percentage"
               className="grid grid-cols-4 gap-2"
             >
               {(['0', '5', '10', '15'] as const).map((pct) => (
                 <button
                   key={pct}
-                  id={`extra-gravel-${pct}-btn`}
+                  id={`extra-waste-${pct}-btn`}
                   type="button"
                   role="radio"
-                  aria-checked={extraGravel === pct}
-                  onClick={() => setExtraGravel(pct)}
+                  aria-checked={extraWaste === pct}
+                  onClick={() => setExtraWaste(pct)}
                   className={`min-h-[42px] py-2 px-2 text-xs sm:text-sm font-mono font-bold rounded-xl border transition-all cursor-pointer ${
-                    extraGravel === pct
+                    extraWaste === pct
                       ? 'bg-[#163A5F] text-white border-[#112F4D] shadow-xs'
                       : 'bg-[#FDFBF7] text-[#4E4942] border-[#DFD5C6] hover:bg-[#FFFFFF] hover:border-[#163A5F]'
                   }`}
@@ -551,8 +451,16 @@ export function GravelCalculatorPage() {
               ))}
             </div>
             <p className="text-xs text-[#6E675E] font-sans pt-1 leading-relaxed">
-              Extra gravel helps account for uneven ground, settling, and small measurement differences.
+              Adding 10% extra material helps cover room cuts, corner fitting, and waste during installation.
             </p>
+          </div>
+
+          {/* Helper Explanation Note */}
+          <div className="p-3.5 rounded-xl bg-[#FAF6F0] border border-[#EAE0D5] flex items-start gap-2.5 text-xs text-[#5C554B] leading-relaxed font-sans">
+            <Info className="w-4 h-4 text-[#163A5F] shrink-0 mt-0.5" />
+            <span>
+              This calculator estimates the amount of flooring needed for a floor. It can be used for laminate, vinyl, hardwood, carpet, and similar flooring materials.
+            </span>
           </div>
         </div>
 
@@ -569,11 +477,11 @@ export function GravelCalculatorPage() {
         {/* Submit Button */}
         <div>
           <button
-            id="calculate-gravel-btn"
+            id="calculate-flooring-btn"
             type="submit"
             className="w-full min-h-[50px] py-3.5 px-6 rounded-xl bg-[#163A5F] text-[#FFFFFF] text-base font-sans font-bold shadow-[0_3px_12px_rgba(22,58,95,0.2)] hover:bg-[#112F4D] active:scale-[0.99] transition-all cursor-pointer"
           >
-            Calculate gravel ↓
+            Calculate flooring ↓
           </button>
         </div>
       </form>
@@ -587,61 +495,49 @@ export function GravelCalculatorPage() {
           role="region"
           aria-live="polite"
         >
-          {/* 1. YOU NEED & ESTIMATED WEIGHT */}
-          <div className="p-6 sm:p-7 rounded-xl bg-[#EDF7F2] border border-[#B4E2D3] space-y-4">
+          {/* 1. YOU NEED */}
+          <div className="p-6 sm:p-7 rounded-xl bg-[#EDF7F2] border border-[#B4E2D3] space-y-2">
             <div>
               <span className="font-sans text-xs font-bold uppercase tracking-wider text-[#0B6E54]">
                 YOU NEED
               </span>
               <div className="flex items-baseline gap-2.5 flex-wrap mt-1">
                 <span className="text-5xl sm:text-6xl font-display font-extrabold text-[#0B6E54] tracking-tight">
-                  {formatVolumeDisplay(result.baseVolume)}
+                  {formatAreaDisplay(result.floorArea)}
                 </span>
                 <span className="text-2xl sm:text-3xl font-display font-bold text-[#0B6E54]">
-                  {result.unitLabel}
+                  {result.areaUnit}
                 </span>
               </div>
-              <div className="text-xs text-[#0B6E54]/80 font-sans mt-0.5">
-                Equivalent: ~{formatVolumeDisplay(result.equivalentVolume)} {result.equivalentUnit}
+              <div className="text-sm font-semibold text-[#0B6E54] font-sans mt-1">
+                Floor area
               </div>
-            </div>
-
-            <div className="pt-3 border-t border-[#B4E2D3]/80">
-              <span className="font-sans text-xs font-bold uppercase tracking-wider text-[#0B6E54]">
-                ESTIMATED WEIGHT
-              </span>
-              <div className="text-2xl sm:text-3xl font-display font-bold text-[#0B6E54] mt-0.5">
-                ≈ {formatWeightDisplay(result.baseWeight)} {result.weightUnit}
-              </div>
-              <p className="text-xs text-[#0B6E54]/90 font-sans mt-1">
-                Estimated using a typical gravel density. Actual weight can vary by gravel type.
-              </p>
             </div>
           </div>
 
-          {/* 2. RECOMMENDED AMOUNT & ESTIMATED WEIGHT */}
+          {/* 2. WHAT TO BUY */}
           <div className="p-5 sm:p-6 rounded-xl bg-[#FAF6F0] border border-[#E6DDD1] space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-              <div className="space-y-2">
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#6E675E] font-sans">
-                    RECOMMENDED AMOUNT
+              <div className="space-y-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#6E675E] font-sans">
+                  WHAT TO BUY
+                </span>
+                <div className="flex items-baseline gap-2.5 flex-wrap mt-0.5">
+                  <span className="text-4xl sm:text-5xl font-display font-bold text-[#1A1918] tracking-tight">
+                    {formatAreaDisplay(result.recommendedArea)}
                   </span>
-                  <div className="text-3xl sm:text-4xl font-display font-bold text-[#1A1918] mt-0.5">
-                    {formatVolumeDisplay(result.recommendedVolume)} {result.unitLabel}
-                  </div>
+                  <span className="text-2xl sm:text-3xl font-display font-bold text-[#1A1918]">
+                    {result.areaUnit}
+                  </span>
                 </div>
-
-                <div>
-                  <div className="text-xl sm:text-2xl font-display font-bold text-[#163A5F]">
-                    ≈ {formatWeightDisplay(result.recommendedWeight)} {result.weightUnit}
-                  </div>
-                  <p className="text-xs text-[#6E675E] font-sans mt-1">
-                    {result.extraPercent > 0
-                      ? `Rounded up with extra gravel (${result.extraPercent}% extra).`
-                      : 'Rounded up with extra gravel.'}
-                  </p>
+                <div className="text-sm font-semibold text-[#163A5F] font-sans mt-1">
+                  Recommended amount
                 </div>
+                <p className="text-xs text-[#6E675E] font-sans mt-1">
+                  {result.extraPercent > 0
+                    ? `Includes ${result.extraPercent}% extra material for cuts and waste.`
+                    : 'Does not include extra material for cuts.'}
+                </p>
               </div>
 
               <button
@@ -668,44 +564,52 @@ export function GravelCalculatorPage() {
               id="calculation-details-panel"
               className="p-5 rounded-xl bg-[#FAF6F0] border border-[#E4DCD0] space-y-2.5 font-sans text-xs sm:text-sm animate-in fade-in duration-150"
             >
-              <div className="flex justify-between items-center py-0.5">
-                <span className="text-[#6E675E]">Area</span>
-                <span className="font-semibold text-[#1A1918]">
-                  {result.area.toFixed(2)} {result.areaUnit}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-0.5">
-                <span className="text-[#6E675E]">Depth</span>
-                <span className="font-semibold text-[#1A1918]">
-                  {result.depth} {result.depthUnit}
-                </span>
-              </div>
+              {method === 'rectangle' ? (
+                <>
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-[#6E675E]">Floor length</span>
+                    <span className="font-semibold text-[#1A1918]">
+                      {length} {result.lenUnit}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-[#6E675E]">Floor width</span>
+                    <span className="font-semibold text-[#1A1918]">
+                      {width} {result.lenUnit}
+                    </span>
+                  </div>
+                </>
+              ) : method === 'circle' ? (
+                <div className="flex justify-between items-center py-0.5">
+                  <span className="text-[#6E675E]">Diameter</span>
+                  <span className="font-semibold text-[#1A1918]">
+                    {diameter} {result.lenUnit}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex justify-between items-center py-0.5">
+                  <span className="text-[#6E675E]">Custom area</span>
+                  <span className="font-semibold text-[#1A1918]">
+                    {customArea} {result.areaUnit}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center py-0.5 border-t border-[#E4DCD0] pt-2">
-                <span className="text-[#6E675E]">Base volume</span>
+                <span className="text-[#6E675E]">Floor area</span>
                 <span className="font-semibold text-[#1A1918]">
-                  {formatVolumeDisplay(result.baseVolume)} {result.unitLabel}
+                  {formatAreaDisplay(result.floorArea)} {result.areaUnit}
                 </span>
               </div>
               <div className="flex justify-between items-center py-0.5">
-                <span className="text-[#6E675E]">Extra gravel ({result.extraPercent}%)</span>
+                <span className="text-[#6E675E]">Extra allowance ({result.extraPercent}%)</span>
                 <span className="font-semibold text-[#163A5F]">
-                  +{formatVolumeDisplay(result.extraVolume)} {result.unitLabel}
+                  +{formatAreaDisplay(result.extraArea)} {result.areaUnit}
                 </span>
               </div>
-              <div className="flex justify-between items-center py-0.5">
-                <span className="text-[#6E675E]">Final volume</span>
-                <span className="font-semibold text-[#0B6E54]">
-                  {formatVolumeDisplay(result.recommendedVolume)} {result.unitLabel}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-0.5 border-t border-[#E4DCD0] pt-2">
-                <span className="text-[#6E675E]">Estimated density</span>
-                <span className="font-semibold text-[#1A1918]">1,600 kg/m³</span>
-              </div>
-              <div className="pt-1 flex justify-between items-center font-bold text-sm">
-                <span className="text-[#1A1918]">Estimated weight</span>
+              <div className="flex justify-between items-center py-0.5 border-t border-[#E4DCD0] pt-2 font-bold text-sm">
+                <span className="text-[#1A1918]">Recommended amount</span>
                 <span className="text-[#0B6E54]">
-                  ≈ {formatWeightDisplay(result.recommendedWeight)} {result.weightUnit}
+                  {formatAreaDisplay(result.recommendedArea)} {result.areaUnit}
                 </span>
               </div>
             </div>
@@ -728,15 +632,15 @@ export function GravelCalculatorPage() {
       )}
 
       {/* 5. SEO Content Below Calculator */}
-      <section aria-labelledby="how-much-gravel-heading" className="mt-10 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
+      <section aria-labelledby="how-much-flooring-heading" className="mt-10 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
         <h2
-          id="how-much-gravel-heading"
+          id="how-much-flooring-heading"
           className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
         >
-          How much gravel do I need?
+          How much flooring do I need?
         </h2>
         <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          This gravel calculator estimates how much gravel you need based on the area you want to cover and the depth of gravel required. It gives you the volume in cubic metres or cubic yards and an estimated weight in tonnes or US tons.
+          This flooring calculator estimates the area you need to cover and adds your chosen extra amount for cuts, waste, and small measurement differences.
         </p>
       </section>
 
@@ -745,22 +649,22 @@ export function GravelCalculatorPage() {
           id="how-it-works-heading"
           className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
         >
-          How the gravel calculator works
+          How the flooring calculator works
         </h2>
         <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          Enter the length and width of your area, then choose the depth of gravel you want. The calculator works out the volume of gravel needed and adds your chosen extra amount to help account for settling, uneven ground, and small measurement differences.
+          Enter the dimensions or custom area of your floor. The calculator works out the floor area and then adds your chosen extra percentage to give you the amount of flooring to buy.
         </p>
       </section>
 
-      <section aria-labelledby="gravel-depth-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
+      <section aria-labelledby="flooring-types-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
         <h2
-          id="gravel-depth-heading"
+          id="flooring-types-heading"
           className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
         >
-          How deep should gravel be?
+          What flooring can I use this calculator for?
         </h2>
         <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          For a light garden path, around 4–5 cm can be suitable. Driveways generally need a deeper layer, often around 7–10 cm or more depending on the base and project.
+          You can use this calculator for laminate, vinyl, hardwood, carpet, and similar flooring materials. Check the coverage information for your specific product when buying.
         </p>
       </section>
 
