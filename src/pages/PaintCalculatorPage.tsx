@@ -532,7 +532,7 @@ export function PaintCalculatorPage() {
           Paint Calculator
         </h1>
         <p className="text-base sm:text-lg text-[#4E4942] leading-relaxed font-sans">
-          Find out how much paint you need for your walls and ceiling. Enter your room dimensions, doors and windows, number of coats, and paint coverage to get a simple estimate.
+          Accurately calculate how much paint you need for any interior or exterior project. Enter room dimensions, subtract doors and windows, account for multiple coats and ceilings, and get exact gallon or litre estimates.
         </p>
       </div>
 
@@ -1344,42 +1344,80 @@ export function PaintCalculatorPage() {
       )}
 
       {/* SEO Explanatory Content */}
-      <section aria-labelledby="how-much-paint-heading" className="mt-10 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
+      <section aria-labelledby="paint-coverage-heading" className="mt-10 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
         <h2
-          id="how-much-paint-heading"
+          id="paint-coverage-heading"
           className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
         >
-          How much paint do I need?
+          How much area does one gallon or litre of paint cover?
         </h2>
         <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          This room paint calculator estimates how much paint you need based on your wall and ceiling area, number of coats, doors and windows, and paint coverage. It also adds extra paint for waste and touch-ups.
+          As a standard benchmark, one US gallon of quality interior paint covers approximately <strong>350 to 400 square feet</strong> with a single coat on smooth, primed drywall. In metric units, one litre of paint covers around <strong>10 to 12 square metres</strong> per coat. Textured surfaces, bare drywall, and dark color transformations often require more paint or a dedicated primer coat.
         </p>
       </section>
 
-      <section aria-labelledby="how-it-works-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
+      <section aria-labelledby="how-many-coats-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
         <h2
-          id="how-it-works-heading"
+          id="how-many-coats-heading"
           className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
         >
-          How the paint calculator works
+          How many coats of paint do I need?
         </h2>
         <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          Enter your room measurements, choose how many coats you need, and add any doors or windows. The calculator works out the paintable area, then tells you how much paint you need and how much to buy.
+          Most residential painting projects require <strong>two full coats</strong> for rich, uniform color depth and long-lasting durability. A single coat is usually only sufficient for simple color touch-ups or refreshing an existing shade in good condition. When painting fresh, unpainted drywall or transitioning from a dark to a lighter shade, apply a primer first followed by two topcoats.
         </p>
       </section>
 
-      {/* Internal Navigation Link */}
-      <section aria-label="Explore more tools" className="mt-6">
-        <div className="p-5 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <span className="text-sm text-[#4E4942] font-sans">
-            Need to estimate materials for another project?
-          </span>
+      <section aria-labelledby="openings-deduction-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
+        <h2
+          id="openings-deduction-heading"
+          className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
+        >
+          How do doors and windows affect paint calculations?
+        </h2>
+        <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
+          Standard interior doors average about 21 square feet (approx. 2 m²) and standard windows average around 15 square feet (approx. 1.4 m²). Deducting these openings ensures you do not overbuy paint. Our calculator automatically subtracts the exact dimensions of your doors and windows from the gross perimeter wall area.
+        </p>
+      </section>
+
+      {/* Related Calculators & Internal Links */}
+      <section aria-label="Related calculators" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-4">
+        <h2 className="text-lg sm:text-xl font-display font-bold text-[#1A1918]">
+          Related Home Improvement Calculators
+        </h2>
+        <p className="text-sm text-[#4E4942] font-sans">
+          Complement your painting project with these related Measurely tools:
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
           <Link
-            href="/tools"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#163A5F] hover:underline shrink-0"
+            href="/tools/drywall-calculator"
+            className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
           >
-            <span>Explore more calculators</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
+              <span>Drywall Calculator</span>
+              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
+            </div>
+            <p className="text-xs text-[#6E675E] mt-1 font-sans">Estimate drywall sheet quantities before priming and painting.</p>
+          </Link>
+          <Link
+            href="/tools/flooring-calculator"
+            className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
+          >
+            <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
+              <span>Flooring Calculator</span>
+              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
+            </div>
+            <p className="text-xs text-[#6E675E] mt-1 font-sans">Calculate hardwood, laminate, or vinyl flooring for the same room.</p>
+          </Link>
+          <Link
+            href="/tools/tile-calculator"
+            className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
+          >
+            <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
+              <span>Tile Calculator</span>
+              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
+            </div>
+            <p className="text-xs text-[#6E675E] mt-1 font-sans">Measure floor and backsplash tiles for kitchen and bath renovations.</p>
           </Link>
         </div>
       </section>

@@ -283,7 +283,7 @@ export function SandCalculatorPage() {
           Sand Calculator
         </h1>
         <p className="text-base sm:text-lg text-[#4E4942] leading-relaxed font-sans">
-          Find out how much sand you need for your garden, landscaping, patio, sandbox, or other project. Enter your area and sand depth to get the volume and estimated weight you need.
+          Calculate the volume and weight of sand needed for paver bedding, sandboxes, masonry mortar, pools, and garden leveling. Enter your dimensions and layer depth to get cubic yards, cubic metres, tonnes, and US tons.
         </p>
       </div>
 
@@ -728,54 +728,85 @@ export function SandCalculatorPage() {
       )}
 
       {/* 5. SEO & Helpful Context Sections */}
-      <section aria-labelledby="how-much-sand-heading" className="mt-8 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
+      <section aria-labelledby="how-deep-sand-heading" className="mt-8 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
         <h2
-          id="how-much-sand-heading"
+          id="how-deep-sand-heading"
           className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
         >
-          How much sand do I need?
+          How deep should sand be for pavers, sandboxes, and pools?
         </h2>
         <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          This sand calculator estimates how much sand you need based on the area you want to cover and the depth required. It gives you the volume in cubic metres or cubic yards and an estimated weight in tonnes or US tons.
+          Recommended sand layer depth varies by application:
+        </p>
+        <ul className="text-sm sm:text-base text-[#4E4942] space-y-1.5 list-disc pl-5 font-sans">
+          <li><strong>Paver bedding layer:</strong> Exactly 1 inch (2.5 cm) of coarse bedding sand screeded smooth over a compacted gravel sub-base. Avoid laying thicker than 1 inch to prevent paver unevenness.</li>
+          <li><strong>Children's sandboxes:</strong> 4 to 8 inches (10 to 20 cm) of clean, washed play sand.</li>
+          <li><strong>Above-ground pool bases:</strong> 2 to 3 inches (5 to 8 cm) of masonry sand to cushion the liner.</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="sand-cubic-yards-to-tons-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
+        <h2
+          id="sand-cubic-yards-to-tons-heading"
+          className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
+        >
+          How much does a cubic yard of sand weigh?
+        </h2>
+        <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
+          Dry, loose sand weighs roughly <strong>2,600 to 2,700 pounds per cubic yard (approx. 1.3 to 1.35 US tons)</strong>. Damp or compacted construction sand can weigh up to <strong>3,000 pounds (1.5 US tons)</strong> per cubic yard (approx. 1.6 tonnes per cubic metre). Our calculator factors in standard aggregate bulk density to give you reliable tonnage estimates for bulk delivery.
         </p>
       </section>
 
-      <section aria-labelledby="how-it-works-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
+      <section aria-labelledby="sand-types-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
         <h2
-          id="how-it-works-heading"
+          id="sand-types-heading"
           className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
         >
-          How the sand calculator works
+          What type of sand should I buy?
         </h2>
         <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          Enter the length and width of your area, or use the circle option for a round area. Then enter the depth of sand you need. The calculator works out the volume and adds your chosen extra amount.
+          Use <strong>concrete sand (sharp/coarse sand)</strong> for paver setting beds because its angular grains interlock and drain efficiently. Use <strong>polymeric sand</strong> for sweeping into joint gaps to lock pavers and block weeds. Choose <strong>play sand</strong> for sandboxes, and <strong>mason sand</strong> for mortar mixes and pool liner cushions.
         </p>
       </section>
 
-      <section aria-labelledby="sand-depth-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
-        <h2
-          id="sand-depth-heading"
-          className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
-        >
-          How deep should sand be?
+      {/* 6. Related Calculators & Internal Links */}
+      <section aria-label="Related calculators" className="mt-8 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-4">
+        <h2 className="text-lg sm:text-xl font-display font-bold text-[#1A1918]">
+          Related Materials Calculators
         </h2>
-        <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          The right depth depends on your project. A shallow layer may be enough for some landscaping uses, while sand for a sandbox or base may require a different depth. Check the recommended depth for your specific project.
+        <p className="text-sm text-[#4E4942] font-sans">
+          Combine sand estimates with other landscaping and building project tools:
         </p>
-      </section>
-
-      {/* 6. Internal Navigation Link */}
-      <section aria-label="Explore more tools" className="mt-8">
-        <div className="p-5 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <span className="text-sm text-[#4E4942] font-sans">
-            Need to estimate materials for another project?
-          </span>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
           <Link
-            href="/tools"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#163A5F] hover:underline shrink-0"
+            href="/tools/paver-calculator"
+            className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
           >
-            <span>Explore more calculators</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
+              <span>Paver Calculator</span>
+              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
+            </div>
+            <p className="text-xs text-[#6E675E] mt-1 font-sans">Calculate the exact number of patio pavers and stones needed.</p>
+          </Link>
+          <Link
+            href="/tools/gravel-calculator"
+            className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
+          >
+            <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
+              <span>Gravel Calculator</span>
+              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
+            </div>
+            <p className="text-xs text-[#6E675E] mt-1 font-sans">Estimate crushed stone for your paver base or drainage trench.</p>
+          </Link>
+          <Link
+            href="/tools/concrete-calculator"
+            className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
+          >
+            <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
+              <span>Concrete Calculator</span>
+              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
+            </div>
+            <p className="text-xs text-[#6E675E] mt-1 font-sans">Calculate concrete volume for pads, edge restraints, and footers.</p>
           </Link>
         </div>
       </section>

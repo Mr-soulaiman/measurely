@@ -80,24 +80,6 @@ export function WorkshopShowcase({ onSelectPaintTool }: WorkshopShowcaseProps) {
       description: 'Organic bulk materials, mulch depth, and raised planter bed soil volumes.',
       tools: [
         {
-          name: 'Topsoil Estimator',
-          status: 'Phase 3 Queue',
-          active: false,
-          unit: 'Bulk Bags / m³',
-          icon: Shovel,
-          accent: 'text-[#73716B]',
-          border: 'border-[#E5E3DD] bg-[#FAF9F5]',
-        },
-        {
-          name: 'Bark Mulch Calculator',
-          status: 'Phase 3 Queue',
-          active: false,
-          unit: 'Coverage Depth',
-          icon: Trees,
-          accent: 'text-[#73716B]',
-          border: 'border-[#E5E3DD] bg-[#FAF9F5]',
-        },
-        {
           name: 'Raised Bed Soil Volume',
           status: 'Phase 3 Queue',
           active: false,

@@ -11,6 +11,20 @@ import { PaintCalculatorPage } from './pages/PaintCalculatorPage';
 import { GravelCalculatorPage } from './pages/GravelCalculatorPage';
 import { SandCalculatorPage } from './pages/SandCalculatorPage';
 import { FlooringCalculatorPage } from './pages/FlooringCalculatorPage';
+import { MulchCalculatorPage } from './pages/MulchCalculatorPage';
+import { TopsoilCalculatorPage } from './pages/TopsoilCalculatorPage';
+import { ConcreteCalculatorPage } from './pages/ConcreteCalculatorPage';
+import { TileCalculatorPage } from './pages/TileCalculatorPage';
+import { DrywallCalculatorPage } from './pages/DrywallCalculatorPage';
+import { PaverCalculatorPage } from './pages/PaverCalculatorPage';
+import { SodCalculatorPage } from './pages/SodCalculatorPage';
+import { RoofingCalculatorPage } from './pages/RoofingCalculatorPage';
+import { FenceCalculatorPage } from './pages/FenceCalculatorPage';
+import { GravelGuidePage } from './pages/guides/GravelGuidePage';
+import { SandGuidePage } from './pages/guides/SandGuidePage';
+import { PaintGuidePage } from './pages/guides/PaintGuidePage';
+import { FlooringGuidePage } from './pages/guides/FlooringGuidePage';
+import { ConcreteGuidePage } from './pages/guides/ConcreteGuidePage';
 
 interface PageMetadata {
   title: string;
@@ -71,10 +85,125 @@ const ROUTE_METADATA: Record<string, PageMetadata> = {
     description: 'Use the Measurely sand calculator to find how much sand you need. Calculate sand volume, cubic yards, cubic metres, and estimated weight for landscaping and other projects.',
     canonical: `${PRODUCTION_DOMAIN}/tools/sand-calculator`,
   },
+  '/tools/mulch-calculator': {
+    title: 'Mulch Calculator — How Much Mulch Do I Need? | Measurely',
+    description: 'Use the Measurely mulch calculator to find how much mulch you need. Calculate mulch volume in cubic metres or cubic yards and estimated weight for garden beds, landscaping, and trees.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/mulch-calculator`,
+  },
+  '/mulch-calculator': {
+    title: 'Mulch Calculator — How Much Mulch Do I Need? | Measurely',
+    description: 'Use the Measurely mulch calculator to find how much mulch you need. Calculate mulch volume in cubic metres or cubic yards and estimated weight for garden beds, landscaping, and trees.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/mulch-calculator`,
+  },
+  '/tools/topsoil-calculator': {
+    title: 'Topsoil Calculator — How Much Topsoil Do I Need? | Measurely',
+    description: 'Use the Measurely topsoil calculator to find how much topsoil you need. Calculate topsoil volume in cubic metres or cubic yards and estimated weight for gardens, lawns, and raised beds.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/topsoil-calculator`,
+  },
+  '/topsoil-calculator': {
+    title: 'Topsoil Calculator — How Much Topsoil Do I Need? | Measurely',
+    description: 'Use the Measurely topsoil calculator to find how much topsoil you need. Calculate topsoil volume in cubic metres or cubic yards and estimated weight for gardens, lawns, and raised beds.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/topsoil-calculator`,
+  },
+  '/tools/concrete-calculator': {
+    title: 'Concrete Calculator — How Much Concrete Do I Need? | Measurely',
+    description: 'Use the Measurely concrete calculator to find how much concrete you need. Calculate concrete volume in cubic metres or cubic yards for slabs, footings, driveways, and patios.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/concrete-calculator`,
+  },
+  '/concrete-calculator': {
+    title: 'Concrete Calculator — How Much Concrete Do I Need? | Measurely',
+    description: 'Use the Measurely concrete calculator to find how much concrete you need. Calculate concrete volume in cubic metres or cubic yards for slabs, footings, driveways, and patios.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/concrete-calculator`,
+  },
+  '/tools/tile-calculator': {
+    title: 'Tile Calculator — How Many Tiles Do I Need? | Measurely',
+    description: 'Use the Measurely tile calculator to find how many tiles you need. Calculate tile quantities for floors and walls based on surface area and tile dimensions with extra allowance for cuts and waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/tile-calculator`,
+  },
+  '/tile-calculator': {
+    title: 'Tile Calculator — How Many Tiles Do I Need? | Measurely',
+    description: 'Use the Measurely tile calculator to find how many tiles you need. Calculate tile quantities for floors and walls based on surface area and tile dimensions with extra allowance for cuts and waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/tile-calculator`,
+  },
+  '/tools/drywall-calculator': {
+    title: 'Drywall Calculator — How Many Sheets Do I Need? | Measurely',
+    description: 'Use the Measurely drywall calculator to find how many drywall sheets you need. Calculate sheet counts for walls and ceilings based on surface area and sheet dimensions with extra allowance for waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/drywall-calculator`,
+  },
+  '/drywall-calculator': {
+    title: 'Drywall Calculator — How Many Sheets Do I Need? | Measurely',
+    description: 'Use the Measurely drywall calculator to find how many drywall sheets you need. Calculate sheet counts for walls and ceilings based on surface area and sheet dimensions with extra allowance for waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/drywall-calculator`,
+  },
+  '/tools/paver-calculator': {
+    title: 'Paver Calculator — How Many Pavers Do I Need? | Measurely',
+    description: 'Use the Measurely paver calculator to find how many pavers you need. Calculate paver quantities for patios, walkways, and driveways based on surface area and paver dimensions with extra allowance for cuts and waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/paver-calculator`,
+  },
+  '/paver-calculator': {
+    title: 'Paver Calculator — How Many Pavers Do I Need? | Measurely',
+    description: 'Use the Measurely paver calculator to find how many pavers you need. Calculate paver quantities for patios, walkways, and driveways based on surface area and paver dimensions with extra allowance for cuts and waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/paver-calculator`,
+  },
+  '/tools/sod-calculator': {
+    title: 'Sod Calculator — How Much Sod Do I Need? | Measurely',
+    description: 'Use the Measurely sod calculator to find how much sod you need. Calculate sod amount and lawn surface area for turf grass installation with extra allowance for curves and cutting waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/sod-calculator`,
+  },
+  '/sod-calculator': {
+    title: 'Sod Calculator — How Much Sod Do I Need? | Measurely',
+    description: 'Use the Measurely sod calculator to find how much sod you need. Calculate sod amount and lawn surface area for turf grass installation with extra allowance for curves and cutting waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/sod-calculator`,
+  },
+  '/tools/roofing-calculator': {
+    title: 'Roofing Calculator — How Much Roofing Do I Need? | Measurely',
+    description: 'Use the Measurely roofing calculator to find how much roofing material you need. Calculate roof surface area and recommended roofing material with extra allowance for ridges, valleys, and cutting waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/roofing-calculator`,
+  },
+  '/roofing-calculator': {
+    title: 'Roofing Calculator — How Much Roofing Do I Need? | Measurely',
+    description: 'Use the Measurely roofing calculator to find how much roofing material you need. Calculate roof surface area and recommended roofing material with extra allowance for ridges, valleys, and cutting waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/roofing-calculator`,
+  },
+  '/tools/fence-calculator': {
+    title: 'Fence Calculator — How Much Fencing Do I Need? | Measurely',
+    description: 'Use the Measurely fence calculator to find how much fencing material you need. Calculate fence surface area and recommended fencing material with extra allowance for trimming and cut waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/fence-calculator`,
+  },
+  '/fence-calculator': {
+    title: 'Fence Calculator — How Much Fencing Do I Need? | Measurely',
+    description: 'Use the Measurely fence calculator to find how much fencing material you need. Calculate fence surface area and recommended fencing material with extra allowance for trimming and cut waste.',
+    canonical: `${PRODUCTION_DOMAIN}/tools/fence-calculator`,
+  },
   '/guides': {
-    title: 'Measurely Guides — Home & DIY Tips',
-    description: 'Simple guides to help you plan your projects.',
+    title: 'Measurely Guides — Simple Home & DIY Material Guides',
+    description: 'Browse simple, practical guides to help you calculate gravel, sand, paint, flooring, concrete, and more for home projects.',
     canonical: `${PRODUCTION_DOMAIN}/guides`,
+  },
+  '/guides/how-much-gravel-do-i-need': {
+    title: 'How Much Gravel Do I Need? | Measurely Guide',
+    description: 'Learn how to calculate gravel volume in cubic yards, cubic metres, and tons for driveways, paths, garden beds, and French drains.',
+    canonical: `${PRODUCTION_DOMAIN}/guides/how-much-gravel-do-i-need`,
+  },
+  '/guides/how-much-sand-do-i-need': {
+    title: 'How Much Sand Do I Need? | Measurely Guide',
+    description: 'Calculate sand requirements for paver bedding, sandboxes, mortar, and pools in cubic yards, tonnes, and 50 lb bags.',
+    canonical: `${PRODUCTION_DOMAIN}/guides/how-much-sand-do-i-need`,
+  },
+  '/guides/how-much-paint-do-i-need': {
+    title: 'How Much Paint Do I Need for a Room? | Measurely Guide',
+    description: 'Calculate how many gallons or litres of paint you need for room walls and ceilings with opening deductions and multi-coat formulas.',
+    canonical: `${PRODUCTION_DOMAIN}/guides/how-much-paint-do-i-need`,
+  },
+  '/guides/how-much-flooring-do-i-need': {
+    title: 'How Much Flooring Do I Need? | Measurely Guide',
+    description: 'Calculate floor area, recommended 10% waste allowance, and total carton box counts for laminate, vinyl plank, and hardwood.',
+    canonical: `${PRODUCTION_DOMAIN}/guides/how-much-flooring-do-i-need`,
+  },
+  '/guides/how-much-concrete-do-i-need': {
+    title: 'How Much Concrete Do I Need? | Measurely Guide',
+    description: 'Calculate concrete volume in cubic yards, cubic metres, and premix bag counts for slabs, footings, patios, and post holes.',
+    canonical: `${PRODUCTION_DOMAIN}/guides/how-much-concrete-do-i-need`,
   },
   '/about': {
     title: 'About Measurely',
@@ -102,6 +231,24 @@ function AppContent() {
         window.history.replaceState({}, '', '/tools/sand-calculator');
       } else if (window.location.pathname === '/flooring-calculator') {
         window.history.replaceState({}, '', '/tools/flooring-calculator');
+      } else if (window.location.pathname === '/mulch-calculator') {
+        window.history.replaceState({}, '', '/tools/mulch-calculator');
+      } else if (window.location.pathname === '/topsoil-calculator') {
+        window.history.replaceState({}, '', '/tools/topsoil-calculator');
+      } else if (window.location.pathname === '/concrete-calculator') {
+        window.history.replaceState({}, '', '/tools/concrete-calculator');
+      } else if (window.location.pathname === '/tile-calculator') {
+        window.history.replaceState({}, '', '/tools/tile-calculator');
+      } else if (window.location.pathname === '/drywall-calculator') {
+        window.history.replaceState({}, '', '/tools/drywall-calculator');
+      } else if (window.location.pathname === '/paver-calculator') {
+        window.history.replaceState({}, '', '/tools/paver-calculator');
+      } else if (window.location.pathname === '/sod-calculator') {
+        window.history.replaceState({}, '', '/tools/sod-calculator');
+      } else if (window.location.pathname === '/roofing-calculator') {
+        window.history.replaceState({}, '', '/tools/roofing-calculator');
+      } else if (window.location.pathname === '/fence-calculator') {
+        window.history.replaceState({}, '', '/tools/fence-calculator');
       }
     }
   }, []);
@@ -172,8 +319,45 @@ function AppContent() {
       case '/tools/sand-calculator':
       case '/sand-calculator':
         return <SandCalculatorPage />;
+      case '/tools/mulch-calculator':
+      case '/mulch-calculator':
+        return <MulchCalculatorPage />;
+      case '/tools/topsoil-calculator':
+      case '/topsoil-calculator':
+        return <TopsoilCalculatorPage />;
+      case '/tools/concrete-calculator':
+      case '/concrete-calculator':
+        return <ConcreteCalculatorPage />;
+      case '/tools/tile-calculator':
+      case '/tile-calculator':
+        return <TileCalculatorPage />;
+      case '/tools/drywall-calculator':
+      case '/drywall-calculator':
+        return <DrywallCalculatorPage />;
+      case '/tools/paver-calculator':
+      case '/paver-calculator':
+        return <PaverCalculatorPage />;
+      case '/tools/sod-calculator':
+      case '/sod-calculator':
+        return <SodCalculatorPage />;
+      case '/tools/roofing-calculator':
+      case '/roofing-calculator':
+        return <RoofingCalculatorPage />;
+      case '/tools/fence-calculator':
+      case '/fence-calculator':
+        return <FenceCalculatorPage />;
       case '/tools':
         return <ToolsPage />;
+      case '/guides/how-much-gravel-do-i-need':
+        return <GravelGuidePage />;
+      case '/guides/how-much-sand-do-i-need':
+        return <SandGuidePage />;
+      case '/guides/how-much-paint-do-i-need':
+        return <PaintGuidePage />;
+      case '/guides/how-much-flooring-do-i-need':
+        return <FlooringGuidePage />;
+      case '/guides/how-much-concrete-do-i-need':
+        return <ConcreteGuidePage />;
       case '/guides':
         return <GuidesPage />;
       case '/about':

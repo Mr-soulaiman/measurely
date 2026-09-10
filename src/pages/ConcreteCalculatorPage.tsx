@@ -18,9 +18,19 @@ interface CalculationResult {
   unitLabel: 'm³' | 'cubic yards';
   equivalentVolume: number;
   equivalentUnit: 'cubic yards' | 'm³';
+  baseWeightKg: number;
+  baseWeightTonnes: number;
+  baseWeightLb: number;
+  baseWeightTons: number;
+  recommendedWeightKg: number;
+  recommendedWeightTonnes: number;
+  recommendedWeightLb: number;
+  recommendedWeightTons: number;
   baseWeight: number;
   recommendedWeight: number;
   weightUnit: 'tonnes' | 'tons';
+  baseWeightDisplay: string;
+  recommendedWeightDisplay: string;
 }
 
 function formatVolumeDisplay(val: number): string {
@@ -35,17 +45,22 @@ function formatWeightDisplay(val: number): string {
   return rounded % 1 === 0 ? rounded.toFixed(1) : rounded.toString();
 }
 
-export function GravelCalculatorPage() {
+function formatNumberWithCommas(val: number): string {
+  if (val <= 0 || isNaN(val)) return '0';
+  return Math.round(val).toLocaleString('en-US');
+}
+
+export function ConcreteCalculatorPage() {
   const [unitSystem, setUnitSystem] = useState<UnitSystem>('metric');
   const [method, setMethod] = useState<MeasureMethod>('rectangle');
 
-  // Input states
-  const [length, setLength] = useState<string>('6');
+  // Input states (default: 4m x 3m slab, 10cm depth)
+  const [length, setLength] = useState<string>('4');
   const [width, setWidth] = useState<string>('3');
-  const [diameter, setDiameter] = useState<string>('4');
-  const [customArea, setCustomArea] = useState<string>('18');
-  const [depth, setDepth] = useState<string>('5');
-  const [extraGravel, setExtraGravel] = useState<'0' | '5' | '10' | '15'>('10');
+  const [diameter, setDiameter] = useState<string>('3.5');
+  const [customArea, setCustomArea] = useState<string>('12');
+  const [depth, setDepth] = useState<string>('10');
+  const [extraConcrete, setExtraConcrete] = useState<'0' | '5' | '10' | '15'>('10');
 
   // Result & UI state
   const [result, setResult] = useState<CalculationResult | null>(null);
@@ -98,166 +113,204 @@ export function GravelCalculatorPage() {
   };
 
   // Calculation core function
-  const calculateGravel = (
-    currentUnit: UnitSystem,
-    currentMethod: MeasureMethod,
-    lenVal: string,
-    widVal: string,
-    diaVal: string,
-    customAreaVal: string,
-    depVal: string,
-    extraVal: string
-  ): CalculationResult | null => {
-    const d = parseFloat(depVal);
-    const extraPct = parseFloat(extraVal) || 0;
+  const calculateConcrete = (): CalculationResult | null => {
+    setError(null);
 
+    const d = parseFloat(depth);
     if (isNaN(d) || d <= 0) {
       return null;
     }
 
-    let area = 0;
-
-    if (currentMethod === 'rectangle') {
-      const l = parseFloat(lenVal);
-      const w = parseFloat(widVal);
-      if (isNaN(l) || isNaN(w) || l <= 0 || w <= 0) {
+    let areaVal = 0;
+    if (method === 'rectangle') {
+      const l = parseFloat(length);
+      const w = parseFloat(width);
+      if (isNaN(l) || l <= 0 || isNaN(w) || w <= 0) {
         return null;
       }
-      area = l * w;
-    } else if (currentMethod === 'circle') {
-      const dia = parseFloat(diaVal);
+      areaVal = l * w;
+    } else if (method === 'circle') {
+      const dia = parseFloat(diameter);
       if (isNaN(dia) || dia <= 0) {
         return null;
       }
       const radius = dia / 2;
-      area = Math.PI * radius * radius;
+      areaVal = Math.PI * radius * radius;
     } else {
-      const ca = parseFloat(customAreaVal);
+      const ca = parseFloat(customArea);
       if (isNaN(ca) || ca <= 0) {
         return null;
       }
-      area = ca;
+      areaVal = ca;
     }
 
-    if (area <= 0) return null;
+    const extraPct = parseInt(extraConcrete, 10) || 0;
 
-    let baseVol = 0;
-    let unitLabel: 'm³' | 'cubic yards' = 'm³';
-    let equivVol = 0;
-    let equivUnit: 'cubic yards' | 'm³' = 'cubic yards';
-    const areaUnit: 'm²' | 'sq ft' = currentUnit === 'metric' ? 'm²' : 'sq ft';
-    const depthUnit: 'cm' | 'in' = currentUnit === 'metric' ? 'cm' : 'in';
-
-    if (currentUnit === 'metric') {
-      // Depth in cm -> meters
+    if (isMetric) {
+      // Metric: Area in m², depth in cm -> depthMeters = depth / 100
       const depthMeters = d / 100;
-      baseVol = area * depthMeters; // m³
-      unitLabel = 'm³';
+      const baseVol = areaVal * depthMeters; // m³
+      const extraVol = baseVol * (extraPct / 100);
+      const recVol = baseVol + extraVol;
+
       // 1 m³ = 1.30795 cubic yards
-      equivVol = baseVol * 1.30795;
-      equivUnit = 'cubic yards';
+      const equivVol = baseVol * 1.30795;
+
+      // Concrete Density: 2,400 kg/m³
+      const densityKgPerM3 = 2400;
+      const baseWtKg = baseVol * densityKgPerM3;
+      const baseWtTonnes = baseWtKg / 1000;
+      const recWtKg = recVol * densityKgPerM3;
+      const recWtTonnes = recWtKg / 1000;
+
+      // Convert to lb & tons for completeness
+      const baseWtLb = baseWtKg * 2.20462;
+      const baseWtTons = baseWtLb / 2000;
+      const recWtLb = recWtKg * 2.20462;
+      const recWtTons = recWtLb / 2000;
+
+      const baseDisplay = `≈ ${formatNumberWithCommas(baseWtKg)} kg (${formatWeightDisplay(baseWtTonnes)} tonnes)`;
+      const recDisplay = `≈ ${formatNumberWithCommas(recWtKg)} kg (${formatWeightDisplay(recWtTonnes)} tonnes)`;
+
+      return {
+        area: areaVal,
+        depth: d,
+        depthUnit: 'cm',
+        areaUnit: 'm²',
+        baseVolume: baseVol,
+        extraVolume: extraVol,
+        recommendedVolume: recVol,
+        extraPercent: extraPct,
+        unitLabel: 'm³',
+        equivalentVolume: equivVol,
+        equivalentUnit: 'cubic yards',
+        baseWeightKg: baseWtKg,
+        baseWeightTonnes: baseWtTonnes,
+        baseWeightLb: baseWtLb,
+        baseWeightTons: baseWtTons,
+        recommendedWeightKg: recWtKg,
+        recommendedWeightTonnes: recWtTonnes,
+        recommendedWeightLb: recWtLb,
+        recommendedWeightTons: recWtTons,
+        baseWeight: baseWtTonnes,
+        recommendedWeight: recWtTonnes,
+        weightUnit: 'tonnes',
+        baseWeightDisplay: baseDisplay,
+        recommendedWeightDisplay: recDisplay,
+      };
     } else {
-      // Depth in inches -> feet
+      // US Imperial: Area in sq ft, depth in inches
       const depthFeet = d / 12;
-      const volumeCuFt = area * depthFeet; // cubic feet
-      baseVol = volumeCuFt / 27; // cubic yards
-      unitLabel = 'cubic yards';
-      // 1 cubic yard = 1 / 1.30795 m³
-      equivVol = baseVol / 1.30795;
-      equivUnit = 'm³';
+      const baseCubicFeet = areaVal * depthFeet;
+      const baseVolYards = baseCubicFeet / 27; // 27 cu ft in 1 cubic yard
+      const extraVolYards = baseVolYards * (extraPct / 100);
+      const recVolYards = baseVolYards + extraVolYards;
+      const recCubicFeet = recVolYards * 27;
+
+      // 1 cubic yard = 0.764555 m³
+      const equivVolMeters = baseVolYards * 0.764555;
+
+      // Concrete Density: 150 lb/ft³
+      const densityLbPerCuFt = 150;
+      const baseWtLb = baseCubicFeet * densityLbPerCuFt;
+      const baseWtTons = baseWtLb / 2000; // US short tons
+      const recWtLb = recCubicFeet * densityLbPerCuFt;
+      const recWtTons = recWtLb / 2000;
+
+      // Convert to kg & tonnes for completeness
+      const baseWtKg = baseWtLb / 2.20462;
+      const baseWtTonnes = baseWtKg / 1000;
+      const recWtKg = recWtLb / 2.20462;
+      const recWtTonnes = recWtKg / 1000;
+
+      const baseDisplay = `≈ ${formatNumberWithCommas(baseWtLb)} lb (${formatWeightDisplay(baseWtTons)} tons)`;
+      const recDisplay = `≈ ${formatNumberWithCommas(recWtLb)} lb (${formatWeightDisplay(recWtTons)} tons)`;
+
+      return {
+        area: areaVal,
+        depth: d,
+        depthUnit: 'in',
+        areaUnit: 'sq ft',
+        baseVolume: baseVolYards,
+        extraVolume: extraVolYards,
+        recommendedVolume: recVolYards,
+        extraPercent: extraPct,
+        unitLabel: 'cubic yards',
+        equivalentVolume: equivVolMeters,
+        equivalentUnit: 'm³',
+        baseWeightKg: baseWtKg,
+        baseWeightTonnes: baseWtTonnes,
+        baseWeightLb: baseWtLb,
+        baseWeightTons: baseWtTons,
+        recommendedWeightKg: recWtKg,
+        recommendedWeightTonnes: recWtTonnes,
+        recommendedWeightLb: recWtLb,
+        recommendedWeightTons: recWtTons,
+        baseWeight: baseWtTons,
+        recommendedWeight: recWtTons,
+        weightUnit: 'tons',
+        baseWeightDisplay: baseDisplay,
+        recommendedWeightDisplay: recDisplay,
+      };
     }
-
-    const extraVol = baseVol * (extraPct / 100);
-    const recVol = baseVol + extraVol;
-
-    // Weight calculation using bulk gravel density of 1,600 kg/m³
-    let baseWeight = 0;
-    let recWeight = 0;
-    let weightUnit: 'tonnes' | 'tons' = 'tonnes';
-
-    if (currentUnit === 'metric') {
-      // Metric: 1 m³ = 1,600 kg = 1.6 tonnes
-      baseWeight = baseVol * 1.6;
-      recWeight = recVol * 1.6;
-      weightUnit = 'tonnes';
-    } else {
-      // US: Convert volume to cubic yards -> m³ -> kg -> lbs -> short tons (2,000 lbs)
-      // 1 cubic yard = 1 / 1.30795 m³
-      // 1 m³ = 1,600 kg; 1 kg = 2.20462262 lbs
-      const tonsPerCubicYard = (1600 / 1.30795) * (2.20462262 / 2000);
-      baseWeight = baseVol * tonsPerCubicYard;
-      recWeight = recVol * tonsPerCubicYard;
-      weightUnit = 'tons';
-    }
-
-    return {
-      area,
-      depth: d,
-      depthUnit,
-      areaUnit,
-      baseVolume: baseVol,
-      extraVolume: extraVol,
-      recommendedVolume: recVol,
-      extraPercent: extraPct,
-      unitLabel,
-      equivalentVolume: equivVol,
-      equivalentUnit: equivUnit,
-      baseWeight,
-      recommendedWeight: recWeight,
-      weightUnit,
-    };
   };
 
-  // Recalculate live when any input changes
+  // Run calculation on every input change
   useEffect(() => {
-    const res = calculateGravel(unitSystem, method, length, width, diameter, customArea, depth, extraGravel);
-    if (res) {
-      setResult(res);
-      setError(null);
-    }
-  }, [unitSystem, method, length, width, diameter, customArea, depth, extraGravel]);
+    const res = calculateConcrete();
+    setResult(res);
+  }, [unitSystem, method, length, width, diameter, customArea, depth, extraConcrete]);
 
-  // Form submit handler with validation and smooth scrolling
+  // Form submission handler with validation
   const handleCalculate = (e: FormEvent) => {
     e.preventDefault();
 
-    const res = calculateGravel(unitSystem, method, length, width, diameter, customArea, depth, extraGravel);
-    if (!res) {
-      if (method === 'rectangle') {
-        setError('Please enter a valid length, width, and depth greater than 0.');
-      } else if (method === 'circle') {
-        setError('Please enter a valid diameter and depth greater than 0.');
-      } else {
-        setError('Please enter a valid area and depth greater than 0.');
+    if (method === 'rectangle') {
+      const l = parseFloat(length);
+      const w = parseFloat(width);
+      if (isNaN(l) || l <= 0 || isNaN(w) || w <= 0) {
+        setError('Please enter valid positive numbers for length and width.');
+        return;
       }
-      setResult(null);
+    } else if (method === 'circle') {
+      const dia = parseFloat(diameter);
+      if (isNaN(dia) || dia <= 0) {
+        setError('Please enter a valid positive number for diameter.');
+        return;
+      }
+    } else {
+      const ca = parseFloat(customArea);
+      if (isNaN(ca) || ca <= 0) {
+        setError('Please enter a valid positive number for custom area.');
+        return;
+      }
+    }
+
+    const d = parseFloat(depth);
+    if (isNaN(d) || d <= 0) {
+      setError('Please enter a valid positive number for slab depth.');
       return;
     }
 
-    setError(null);
-    setResult(res);
-
-    // Smooth scroll to result
-    const resultElement = document.getElementById('result-box');
-    if (resultElement) {
-      resultElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    const res = calculateConcrete();
+    if (res) {
+      setResult(res);
+      setError(null);
+      const el = document.getElementById('result-box');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     }
   };
 
-  const handlePositiveInput = (setter: (v: string) => void) => (e: ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    if (val === '' || (!val.includes('-') && !isNaN(Number(val)))) {
-      setter(val);
-    }
-  };
-
+  // PDF Export
   const handleDownloadPdf = async () => {
     if (!result) return;
+    setIsGeneratingPdf(true);
     try {
-      setIsGeneratingPdf(true);
       await exportBulkMaterialPdf({
-        toolName: 'Gravel Calculator',
-        materialType: 'gravel',
+        toolName: 'Concrete Calculator',
+        materialType: 'concrete',
         unitSystem,
         method,
         length: method === 'rectangle' ? length : undefined,
@@ -265,25 +318,32 @@ export function GravelCalculatorPage() {
         diameter: method === 'circle' ? diameter : undefined,
         customArea: method === 'custom' ? customArea : undefined,
         depth,
-        extraPercent: extraGravel,
+        extraPercent: extraConcrete,
         result,
       });
     } catch (err) {
-      console.error('Failed to export Gravel calculation PDF:', err);
+      console.error('Failed to export PDF', err);
     } finally {
       setIsGeneratingPdf(false);
     }
   };
 
+  const handlePositiveInput = (setter: (val: string) => void) => (e: ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val === '' || (!val.includes('-') && !isNaN(Number(val)))) {
+      setter(val);
+    }
+  };
+
   return (
-    <main className="flex-1 max-w-xl w-full mx-auto px-5 py-8 sm:py-12 flex flex-col justify-center">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       {/* 1. Title & Intro */}
       <div className="mb-6">
         <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-display font-extrabold text-[#1A1918] tracking-tight leading-tight mb-2.5">
-          Gravel Calculator
+          Concrete Calculator
         </h1>
         <p className="text-base sm:text-lg text-[#4E4942] leading-relaxed font-sans">
-          Calculate the exact gravel quantity needed for driveways, walkways, french drains, and landscaping beds. Enter your dimensions and target depth to get accurate cubic yards, cubic metres, tonnes, and US tons.
+          Calculate the exact concrete volume and weight for slabs, footings, driveways, patios, and posts. Enter your dimensions and slab thickness to get cubic yards, cubic metres, tonnes, and premix bag counts.
         </p>
       </div>
 
@@ -324,7 +384,7 @@ export function GravelCalculatorPage() {
       </section>
 
       {/* 3. Form Workspace */}
-      <form onSubmit={handleCalculate} aria-label="Gravel calculation form" className="space-y-6">
+      <form onSubmit={handleCalculate} aria-label="Concrete calculation form" className="space-y-6">
         <div className="bg-[#FFFFFF] border border-[#E6DDD1] rounded-2xl p-6 sm:p-8 shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-6">
           {/* Measurement Method Selector */}
           <div className="space-y-2.5 pb-4 border-b border-[#EAE0D5]">
@@ -399,7 +459,7 @@ export function GravelCalculatorPage() {
                       type="number"
                       step="any"
                       min="0"
-                      placeholder={isMetric ? 'e.g. 6' : 'e.g. 20'}
+                      placeholder={isMetric ? 'e.g. 4' : 'e.g. 14'}
                       value={length}
                       onChange={handlePositiveInput(setLength)}
                       className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-10 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
@@ -450,7 +510,7 @@ export function GravelCalculatorPage() {
                     type="number"
                     step="any"
                     min="0"
-                    placeholder={isMetric ? 'e.g. 4' : 'e.g. 12'}
+                    placeholder={isMetric ? 'e.g. 3.5' : 'e.g. 12'}
                     value={diameter}
                     onChange={handlePositiveInput(setDiameter)}
                     className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-10 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
@@ -461,7 +521,7 @@ export function GravelCalculatorPage() {
                 </div>
               </div>
             ) : (
-              /* Custom Area */
+              /* Custom Area: show ONLY Area and hide other dimensions */
               <div className="space-y-2">
                 <div className="space-y-1.5">
                   <label
@@ -476,7 +536,7 @@ export function GravelCalculatorPage() {
                       type="number"
                       step="any"
                       min="0"
-                      placeholder={isMetric ? 'e.g. 18' : 'e.g. 200'}
+                      placeholder={isMetric ? 'e.g. 12' : 'e.g. 130'}
                       value={customArea}
                       onChange={handlePositiveInput(setCustomArea)}
                       className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-12 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
@@ -487,8 +547,8 @@ export function GravelCalculatorPage() {
                   </div>
                 </div>
                 <div className="space-y-1 text-xs text-[#6E675E] font-sans leading-relaxed">
-                  <p>For irregular or multiple areas, enter the total area you want to cover.</p>
-                  <p>Measure each section separately and add the areas together.</p>
+                  <p>For L-shaped patios, irregular pads, or multiple slab sections, enter the total surface area directly.</p>
+                  <p>Calculate each section separately and add the areas together.</p>
                 </div>
               </div>
             )}
@@ -499,7 +559,7 @@ export function GravelCalculatorPage() {
                 htmlFor={depthId}
                 className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans"
               >
-                Depth
+                Depth / Thickness
               </label>
               <div className="relative">
                 <input
@@ -507,7 +567,7 @@ export function GravelCalculatorPage() {
                   type="number"
                   step="any"
                   min="0"
-                  placeholder={isMetric ? 'e.g. 5' : 'e.g. 2'}
+                  placeholder={isMetric ? 'e.g. 10' : 'e.g. 4'}
                   value={depth}
                   onChange={handlePositiveInput(setDepth)}
                   className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-12 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
@@ -517,31 +577,33 @@ export function GravelCalculatorPage() {
                 </span>
               </div>
               <p className="text-xs text-[#6E675E] font-sans">
-                {isMetric ? 'Typical depth: 4–5 cm for paths, 7–10 cm for driveways.' : 'Typical depth: 2 in for walkways, 3–4 in for driveways.'}
+                {isMetric
+                  ? 'Typical depth: 10 cm for sidewalks, shed bases & residential patios; 12.5–15 cm for driveways; 20 cm+ for heavy vehicle slabs or structural footings.'
+                  : 'Typical depth: 4 in for walkways, shed pads & residential patios; 5–6 in for standard driveways; 8 in+ for heavy vehicle slabs or structural footings.'}
               </p>
             </div>
           </div>
 
-          {/* Extra Gravel Selector */}
+          {/* Extra Material Selector */}
           <div className="pt-2 border-t border-[#EAE0D5] space-y-2">
             <label className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans">
-              Extra gravel
+              Extra concrete
             </label>
             <div
               role="radiogroup"
-              aria-label="Extra gravel percentage"
+              aria-label="Extra concrete percentage"
               className="grid grid-cols-4 gap-2"
             >
               {(['0', '5', '10', '15'] as const).map((pct) => (
                 <button
                   key={pct}
-                  id={`extra-gravel-${pct}-btn`}
+                  id={`extra-concrete-${pct}-btn`}
                   type="button"
                   role="radio"
-                  aria-checked={extraGravel === pct}
-                  onClick={() => setExtraGravel(pct)}
+                  aria-checked={extraConcrete === pct}
+                  onClick={() => setExtraConcrete(pct)}
                   className={`min-h-[42px] py-2 px-2 text-xs sm:text-sm font-mono font-bold rounded-xl border transition-all cursor-pointer ${
-                    extraGravel === pct
+                    extraConcrete === pct
                       ? 'bg-[#163A5F] text-white border-[#112F4D] shadow-xs'
                       : 'bg-[#FDFBF7] text-[#4E4942] border-[#DFD5C6] hover:bg-[#FFFFFF] hover:border-[#163A5F]'
                   }`}
@@ -551,7 +613,7 @@ export function GravelCalculatorPage() {
               ))}
             </div>
             <p className="text-xs text-[#6E675E] font-sans pt-1 leading-relaxed">
-              Extra gravel helps account for uneven ground, settling, and small measurement differences.
+              Adding 10% extra is standard practice to account for formwork flex, ground settling, base unevenness, and spillage during the pour.
             </p>
           </div>
         </div>
@@ -569,11 +631,11 @@ export function GravelCalculatorPage() {
         {/* Submit Button */}
         <div>
           <button
-            id="calculate-gravel-btn"
+            id="calculate-concrete-btn"
             type="submit"
             className="w-full min-h-[50px] py-3.5 px-6 rounded-xl bg-[#163A5F] text-[#FFFFFF] text-base font-sans font-bold shadow-[0_3px_12px_rgba(22,58,95,0.2)] hover:bg-[#112F4D] active:scale-[0.99] transition-all cursor-pointer"
           >
-            Calculate gravel ↓
+            Calculate concrete ↓
           </button>
         </div>
       </form>
@@ -611,21 +673,21 @@ export function GravelCalculatorPage() {
                 ESTIMATED WEIGHT
               </span>
               <div className="text-2xl sm:text-3xl font-display font-bold text-[#0B6E54] mt-0.5">
-                ≈ {formatWeightDisplay(result.baseWeight)} {result.weightUnit}
+                {result.baseWeightDisplay}
               </div>
               <p className="text-xs text-[#0B6E54]/90 font-sans mt-1">
-                Estimated using a typical gravel density. Actual weight can vary by gravel type.
+                Estimated using a typical concrete density of {isMetric ? '2,400 kg/m³' : '150 lb/ft³'}. Actual weight is an estimate because concrete density varies depending on aggregate type, water content, mix design, and steel reinforcement.
               </p>
             </div>
           </div>
 
-          {/* 2. RECOMMENDED AMOUNT & ESTIMATED WEIGHT */}
+          {/* 2. WHAT TO BUY */}
           <div className="p-5 sm:p-6 rounded-xl bg-[#FAF6F0] border border-[#E6DDD1] space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div className="space-y-2">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-[#6E675E] font-sans">
-                    RECOMMENDED AMOUNT
+                    WHAT TO BUY
                   </span>
                   <div className="text-3xl sm:text-4xl font-display font-bold text-[#1A1918] mt-0.5">
                     {formatVolumeDisplay(result.recommendedVolume)} {result.unitLabel}
@@ -634,12 +696,12 @@ export function GravelCalculatorPage() {
 
                 <div>
                   <div className="text-xl sm:text-2xl font-display font-bold text-[#163A5F]">
-                    ≈ {formatWeightDisplay(result.recommendedWeight)} {result.weightUnit}
+                    {result.recommendedWeightDisplay}
                   </div>
                   <p className="text-xs text-[#6E675E] font-sans mt-1">
                     {result.extraPercent > 0
-                      ? `Rounded up with extra gravel (${result.extraPercent}% extra).`
-                      : 'Rounded up with extra gravel.'}
+                      ? `Includes extra concrete (${result.extraPercent}% extra for formwork flex, sub-base unevenness & spillage).`
+                      : 'Exact volume needed without extra allowance.'}
                   </p>
                 </div>
               </div>
@@ -687,122 +749,174 @@ export function GravelCalculatorPage() {
                 </span>
               </div>
               <div className="flex justify-between items-center py-0.5">
-                <span className="text-[#6E675E]">Extra gravel ({result.extraPercent}%)</span>
+                <span className="text-[#6E675E]">Extra concrete ({result.extraPercent}%)</span>
                 <span className="font-semibold text-[#163A5F]">
                   +{formatVolumeDisplay(result.extraVolume)} {result.unitLabel}
                 </span>
               </div>
-              <div className="flex justify-between items-center py-0.5">
-                <span className="text-[#6E675E]">Final volume</span>
-                <span className="font-semibold text-[#0B6E54]">
+              <div className="flex justify-between items-center py-0.5 border-t border-[#E4DCD0] pt-2 font-bold text-sm">
+                <span className="text-[#1A1918]">Final recommended volume</span>
+                <span className="text-[#0B6E54]">
                   {formatVolumeDisplay(result.recommendedVolume)} {result.unitLabel}
                 </span>
               </div>
               <div className="flex justify-between items-center py-0.5 border-t border-[#E4DCD0] pt-2">
-                <span className="text-[#6E675E]">Estimated density</span>
-                <span className="font-semibold text-[#1A1918]">1,600 kg/m³</span>
-              </div>
-              <div className="pt-1 flex justify-between items-center font-bold text-sm">
-                <span className="text-[#1A1918]">Estimated weight</span>
-                <span className="text-[#0B6E54]">
-                  ≈ {formatWeightDisplay(result.recommendedWeight)} {result.weightUnit}
+                <span className="text-[#6E675E]">Estimated base weight</span>
+                <span className="font-semibold text-[#1A1918]">
+                  {result.baseWeightDisplay.replace(/^≈\s*/, '')}
                 </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5">
+                <span className="text-[#6E675E]">Estimated order weight</span>
+                <span className="font-semibold text-[#0B6E54]">
+                  {result.recommendedWeightDisplay.replace(/^≈\s*/, '')}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 text-xs text-[#6E675E]">
+                <span>Concrete density used</span>
+                <span>{isMetric ? '2,400 kg/m³' : '150 lb/ft³ (~4,050 lb/yd³)'}</span>
               </div>
             </div>
           )}
 
-          {/* Download PDF button below the final result */}
+          {/* Download PDF button */}
           <div className="pt-2 border-t border-[#EAE0D5]">
             <button
               id="download-pdf-btn"
               type="button"
               onClick={handleDownloadPdf}
               disabled={isGeneratingPdf}
-              className="w-full min-h-[46px] py-3 px-5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#DDD3C5] text-[#163A5F] font-sans font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xs hover:border-[#163A5F]/30 active:scale-[0.99] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-[#DFD5C6] bg-[#FFFFFF] hover:bg-[#FDFBF7] text-[#163A5F] text-sm font-sans font-bold shadow-xs hover:border-[#163A5F] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FileDown className="w-4 h-4 text-[#163A5F]" />
-              <span>{isGeneratingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
+              <span>{isGeneratingPdf ? 'Generating PDF...' : 'Download calculation PDF'}</span>
             </button>
           </div>
         </section>
       )}
 
-      {/* 5. SEO Content Below Calculator */}
-      <section aria-labelledby="how-deep-gravel-heading" className="mt-10 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
-        <h2
-          id="how-deep-gravel-heading"
-          className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
-        >
-          How deep should gravel be for driveways and paths?
-        </h2>
-        <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          Recommended gravel depth depends heavily on foot traffic and vehicular loads. For decorative garden borders and pedestrian walkways, a depth of <strong>2 to 3 inches (5 to 8 cm)</strong> is ideal. For gravel driveways and vehicle parking bays, aim for <strong>4 to 6 inches (10 to 15 cm)</strong> over a compacted sub-base to prevent rutting, shifting, and sinking.
-        </p>
-      </section>
+      {/* 5. Educational Content & SEO Guide */}
+      <section className="mt-14 pt-10 border-t border-[#E6DDD1] space-y-10">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-display font-bold text-[#1A1918] mb-4">
+            How much concrete do I need?
+          </h2>
+          <p className="text-base text-[#4E4942] leading-relaxed mb-4">
+            To determine how much concrete you need for any project, multiply the surface area of your pour by its depth. This gives you the raw geometric volume in cubic metres (m³) or cubic yards. Adding 10% extra is strongly recommended for every pour to prevent running short before finishing.
+          </p>
+          <div className="p-5 bg-[#FAF6F0] rounded-xl border border-[#E4DCD0] font-mono text-sm text-[#1A1918] space-y-1.5 mb-4">
+            <p className="font-bold font-sans text-xs uppercase tracking-wider text-[#6E675E]">
+              Concrete Volume Formula
+            </p>
+            <p><strong>Metric:</strong> Volume (m³) = Area (m²) × [Depth (cm) ÷ 100]</p>
+            <p><strong>US / Imperial:</strong> Volume (cubic yards) = [Area (sq ft) × (Depth in inches ÷ 12)] ÷ 27</p>
+          </div>
+          <p className="text-sm text-[#4E4942] leading-relaxed">
+            Running short on wet concrete creates a cold joint where two batches harden at different times, causing structural weakness and visible cracking. Always round up your order.
+          </p>
+        </div>
 
-      <section aria-labelledby="cubic-yards-to-tons-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
-        <h2
-          id="cubic-yards-to-tons-heading"
-          className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
-        >
-          How do I convert gravel cubic yards to tons?
-        </h2>
-        <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          Most landscape quarries sell bulk aggregate by weight (US tons or metric tonnes) rather than pure volume. Standard crushed stone, pea gravel, and road base average approximately <strong>1.4 tons (approx. 2,800 lbs) per cubic yard</strong> (or ~1.65 tonnes per cubic metre). Our calculator automatically converts your calculated volume into estimated tonnage so you can order with confidence.
-        </p>
-      </section>
+        {/* Recommended Depths by Project Type */}
+        <div className="space-y-4">
+          <h3 className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]">
+            Standard concrete slab depths
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm font-sans">
+            <div className="p-4 rounded-xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-xs space-y-1.5">
+              <h4 className="font-bold text-[#1A1918]">Sidewalks & Walkways</h4>
+              <p className="text-[#4E4942]">10 cm (4 inches) with a well-compacted gravel base is standard for garden paths and pedestrian sidewalks.</p>
+            </div>
+            <div className="p-4 rounded-xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-xs space-y-1.5">
+              <h4 className="font-bold text-[#1A1918]">Patios & Shed Slabs</h4>
+              <p className="text-[#4E4942]">10 cm (4 inches) for domestic garden sheds and outdoor dining patios carrying standard furniture.</p>
+            </div>
+            <div className="p-4 rounded-xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-xs space-y-1.5">
+              <h4 className="font-bold text-[#1A1918]">Standard Driveways</h4>
+              <p className="text-[#4E4942]">12.5 cm to 15 cm (5 to 6 inches) to comfortably support passenger cars, SUVs, and light trucks without cracking.</p>
+            </div>
+            <div className="p-4 rounded-xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-xs space-y-1.5">
+              <h4 className="font-bold text-[#1A1918]">Heavy Duty & Commercial Slabs</h4>
+              <p className="text-[#4E4942]">15 cm to 20 cm (6 to 8 inches) for heavy motorhomes, delivery vehicle access, or industrial equipment.</p>
+            </div>
+          </div>
+        </div>
 
-      <section aria-labelledby="settling-allowance-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
-        <h2
-          id="settling-allowance-heading"
-          className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
-        >
-          Why should I add extra gravel for compaction and settling?
-        </h2>
-        <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          When loose gravel is poured, spread, and compacted with a plate compactor or driven on, it settles and interlocks tightly, losing 5% to 15% of its initial loose volume. Selecting a <strong>10% extra allowance</strong> in the calculator compensates for natural compaction, uneven ground subgrades, and spillage during installation.
-        </p>
-      </section>
+        {/* Concrete Weight & Density */}
+        <div className="space-y-4">
+          <h3 className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]">
+            How heavy is concrete? Concrete weight & density
+          </h3>
+          <p className="text-base text-[#4E4942] leading-relaxed">
+            Normal-weight cured concrete has a standard bulk density of approximately <strong>2,400 kg/m³</strong> (equivalent to <strong>150 lb/ft³</strong>, or approximately <strong>4,050 lb per cubic yard / ~2.03 short tons</strong>).
+          </p>
+          <div className="p-5 bg-[#FAF6F0] rounded-xl border border-[#E4DCD0] font-mono text-sm text-[#1A1918] space-y-1.5">
+            <p className="font-bold font-sans text-xs uppercase tracking-wider text-[#6E675E]">
+              Concrete Weight Formula
+            </p>
+            <p><strong>Weight = Concrete Volume × Density</strong></p>
+            <div className="text-xs text-[#4E4942] font-sans pt-1 space-y-0.5">
+              <p>• <strong>Metric:</strong> Weight (kg) = Volume (m³) × 2,400 kg/m³ | Weight (tonnes) = kg ÷ 1,000</p>
+              <p>• <strong>US / Imperial:</strong> Weight (lb) = Volume (cu ft) × 150 lb/ft³ | Weight (short tons) = lb ÷ 2,000</p>
+            </div>
+          </div>
+          <p className="text-sm text-[#4E4942] leading-relaxed">
+            <strong>Why weight is an estimate:</strong> The exact density of concrete varies depending on the type of aggregates used (such as gravel, limestone, or dense basalt), the water-to-cement ratio, air-entraining admixtures, and the amount of embedded steel rebar. Calculating estimated weight helps plan transport, mixer truck payload limits, and site wheelbarrow hauling.
+          </p>
+        </div>
 
-      {/* 6. Related Calculators & Internal Links */}
-      <section aria-label="Related calculators" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-4">
-        <h2 className="text-lg sm:text-xl font-display font-bold text-[#1A1918]">
-          Related Landscaping & Construction Calculators
-        </h2>
-        <p className="text-sm text-[#4E4942] font-sans">
-          Working on outdoor landscaping, paths, or hardscaping? Check out these related tools:
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-          <Link
-            href="/tools/sand-calculator"
-            className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
-          >
-            <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
-              <span>Sand Calculator</span>
-              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
-            </div>
-            <p className="text-xs text-[#6E675E] mt-1 font-sans">Calculate bedding sand for pavers, masonry, or pipe trenches.</p>
-          </Link>
-          <Link
-            href="/tools/paver-calculator"
-            className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
-          >
-            <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
-              <span>Paver Calculator</span>
-              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
-            </div>
-            <p className="text-xs text-[#6E675E] mt-1 font-sans">Estimate patio and walkway stones over a gravel sub-base.</p>
-          </Link>
-          <Link
-            href="/tools/concrete-calculator"
-            className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
-          >
-            <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
-              <span>Concrete Calculator</span>
-              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
-            </div>
-            <p className="text-xs text-[#6E675E] mt-1 font-sans">Calculate premix bags or ready-mix yardage for slabs and footings.</p>
-          </Link>
+        {/* Ordering Tips */}
+        <div className="space-y-4">
+          <h3 className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]">
+            Tips for ordering ready-mix concrete
+          </h3>
+          <ul className="space-y-2.5 text-sm sm:text-base text-[#4E4942] list-disc list-inside leading-relaxed">
+            <li><strong>Measure formwork accurately:</strong> Measure the inside dimensions of your wooden forms right before pouring to ensure the forms have not bowed or shifted.</li>
+            <li><strong>Inspect your sub-base depth:</strong> High and low spots in the crushed stone base change the concrete volume. If ground prep is uneven, opt for 10% to 15% extra material.</li>
+            <li><strong>Order in truck intervals:</strong> Ready-mix concrete trucks typically carry 6 to 9 cubic metres (8 to 10 cubic yards). Small orders below a minimum threshold may incur a short-load fee.</li>
+            <li><strong>Plan your access route:</strong> Ensure clear wheelbarrow routes or verify pump truck clearance before the mixer arrives at your site.</li>
+          </ul>
+        </div>
+
+        {/* Related Calculators & Internal Links */}
+        <div className="pt-6 border-t border-[#E6DDD1]">
+          <h3 className="text-lg sm:text-xl font-display font-bold text-[#1A1918] mb-3">
+            Related Hardscaping & Construction Calculators
+          </h3>
+          <p className="text-sm text-[#4E4942] font-sans mb-4">
+            Pouring a slab often requires ground preparation and bedding. Check out these related Measurely tools:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Link
+              href="/tools/gravel-calculator"
+              className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
+            >
+              <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
+                <span>Gravel Calculator</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
+              </div>
+              <p className="text-xs text-[#6E675E] mt-1 font-sans">Calculate crushed rock and base aggregate for concrete sub-bases.</p>
+            </Link>
+            <Link
+              href="/tools/sand-calculator"
+              className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
+            >
+              <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
+                <span>Sand Calculator</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
+              </div>
+              <p className="text-xs text-[#6E675E] mt-1 font-sans">Estimate sand volume and weight for mortar, leveling, and paving.</p>
+            </Link>
+            <Link
+              href="/tools/paver-calculator"
+              className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
+            >
+              <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
+                <span>Paver Calculator</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
+              </div>
+              <p className="text-xs text-[#6E675E] mt-1 font-sans">Compare concrete slab requirements against stone or brick pavers.</p>
+            </Link>
+          </div>
         </div>
       </section>
     </main>

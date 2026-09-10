@@ -17,6 +17,9 @@ export function Navigation() {
     if (href === '/tools') {
       return currentPath === '/tools' || currentPath.startsWith('/tools/');
     }
+    if (href === '/guides') {
+      return currentPath === '/guides' || currentPath.startsWith('/guides/');
+    }
     return currentPath === href;
   };
 

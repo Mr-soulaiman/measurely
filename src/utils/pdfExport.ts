@@ -91,8 +91,8 @@ export interface PaintPdfData {
 }
 
 export interface BulkMaterialPdfData {
-  toolName: 'Gravel Calculator' | 'Sand Calculator';
-  materialType: 'gravel' | 'sand';
+  toolName?: 'Gravel Calculator' | 'Sand Calculator' | 'Mulch Calculator' | 'Topsoil Calculator' | 'Concrete Calculator' | string;
+  materialType: 'gravel' | 'sand' | 'mulch' | 'topsoil' | 'concrete';
   unitSystem: 'metric' | 'us';
   method: 'rectangle' | 'circle' | 'custom';
   length?: string;
@@ -113,9 +113,11 @@ export interface BulkMaterialPdfData {
     unitLabel: 'm³' | 'cubic yards';
     equivalentVolume: number;
     equivalentUnit: 'cubic yards' | 'm³';
-    baseWeight: number;
-    recommendedWeight: number;
-    weightUnit: 'tonnes' | 'tons';
+    baseWeight?: number;
+    recommendedWeight?: number;
+    weightUnit?: 'tonnes' | 'tons';
+    baseWeightDisplay?: string;
+    recommendedWeightDisplay?: string;
   };
 }
 
@@ -129,6 +131,125 @@ export interface FlooringPdfData {
   extraPercent: string;
   result: {
     floorArea: number;
+    extraArea: number;
+    recommendedArea: number;
+    extraPercent: number;
+    lenUnit: 'm' | 'ft';
+    areaUnit: 'm²' | 'sq ft';
+  };
+}
+
+export interface TilePdfData {
+  unitSystem: 'metric' | 'us';
+  method: 'rectangle' | 'circle' | 'custom';
+  length?: string;
+  width?: string;
+  diameter?: string;
+  customArea?: string;
+  tileLength: string;
+  tileWidth: string;
+  extraPercent: string;
+  result: {
+    area: number;
+    singleTileArea: number;
+    tilesNeeded: number;
+    recommendedTiles: number;
+    extraTiles: number;
+    extraPercent: number;
+    lenUnit: 'm' | 'ft';
+    areaUnit: 'm²' | 'sq ft';
+    tileDimUnit: 'cm' | 'in';
+  };
+}
+
+export interface DrywallPdfData {
+  unitSystem: 'metric' | 'us';
+  areaType: 'rectangle' | 'custom';
+  length?: string;
+  width?: string;
+  customArea?: string;
+  sheetLength: string;
+  sheetWidth: string;
+  extraPercent: string;
+  result: {
+    totalArea: number;
+    singleSheetArea: number;
+    areaWithWaste: number;
+    baseSheets: number;
+    recommendedSheets: number;
+    extraSheets: number;
+    extraPercent: number;
+    lenUnit: 'm' | 'ft';
+    areaUnit: 'm²' | 'sq ft';
+  };
+}
+
+export interface PaverPdfData {
+  unitSystem: 'metric' | 'us';
+  areaType: 'rectangle' | 'circle' | 'custom';
+  length?: string;
+  width?: string;
+  diameter?: string;
+  customArea?: string;
+  paverLength: string;
+  paverWidth: string;
+  extraPercent: string;
+  result: {
+    totalArea: number;
+    areaWithExtra: number;
+    singlePaverArea: number;
+    paversNeeded: number;
+    recommendedPavers: number;
+    extraPavers: number;
+    extraPercent: number;
+    lenUnit: 'm' | 'ft';
+    areaUnit: 'm²' | 'sq ft';
+    paverDimUnit: 'cm' | 'in';
+  };
+}
+
+export interface SodPdfData {
+  unitSystem: 'metric' | 'us';
+  areaType: 'rectangle' | 'circle' | 'custom';
+  length?: string;
+  width?: string;
+  diameter?: string;
+  customArea?: string;
+  extraPercent: string;
+  result: {
+    totalArea: number;
+    extraArea: number;
+    recommendedArea: number;
+    extraPercent: number;
+    lenUnit: 'm' | 'ft';
+    areaUnit: 'm²' | 'sq ft';
+  };
+}
+
+export interface RoofingPdfData {
+  unitSystem: 'metric' | 'us';
+  areaType: 'rectangle' | 'custom';
+  length?: string;
+  width?: string;
+  customArea?: string;
+  extraPercent: string;
+  result: {
+    roofArea: number;
+    extraArea: number;
+    recommendedArea: number;
+    extraPercent: number;
+    lenUnit: 'm' | 'ft';
+    areaUnit: 'm²' | 'sq ft';
+  };
+}
+
+export interface FencePdfData {
+  unitSystem: 'metric' | 'us';
+  length: string;
+  height: string;
+  extraPercent: string;
+  result: {
+    fenceArea: number;
     extraArea: number;
     recommendedArea: number;
     extraPercent: number;
@@ -640,8 +761,17 @@ export async function exportPaintCalculatorPdf(data: PaintPdfData): Promise<void
 export async function createBulkMaterialPdfDoc(data: BulkMaterialPdfData): Promise<jsPDF> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const isMetric = data.unitSystem === 'metric';
-  const isGravel = data.materialType === 'gravel';
-  const calculatorName = isGravel ? 'Gravel Calculator' : 'Sand Calculator';
+  const calculatorName =
+    data.toolName ||
+    (data.materialType === 'gravel'
+      ? 'Gravel Calculator'
+      : data.materialType === 'sand'
+      ? 'Sand Calculator'
+      : data.materialType === 'mulch'
+      ? 'Mulch Calculator'
+      : data.materialType === 'topsoil'
+      ? 'Topsoil Calculator'
+      : 'Concrete Calculator');
   const unitLabel = data.result.unitLabel;
   const weightUnit = data.result.weightUnit;
   const depthUnit = data.result.depthUnit;
@@ -651,21 +781,28 @@ export async function createBulkMaterialPdfDoc(data: BulkMaterialPdfData): Promi
 
   // 2. YOUR RESULT
   y = drawSectionHeading(doc, 'YOUR RESULT', y);
+  const baseSubVal =
+    data.result.baseWeightDisplay ||
+    (data.result.baseWeight !== undefined && weightUnit ? `≈ ${formatWeightDisplay(data.result.baseWeight)} ${weightUnit}` : undefined);
+  const recSubVal =
+    data.result.recommendedWeightDisplay ||
+    (data.result.recommendedWeight !== undefined && weightUnit ? `≈ ${formatWeightDisplay(data.result.recommendedWeight)} ${weightUnit}` : undefined);
+
   y = drawResultCards(
     doc,
     {
       tag: 'YOUR RESULT',
       mainValue: `${formatVolumeDisplay(data.result.baseVolume)} ${unitLabel}`,
       mainLabel: 'Volume needed',
-      subValue: `≈ ${formatWeightDisplay(data.result.baseWeight)} ${weightUnit}`,
-      subLabel: 'Estimated weight',
+      subValue: baseSubVal,
+      subLabel: baseSubVal ? 'Estimated weight' : undefined,
     },
     {
       tag: 'WHAT TO BUY',
       mainValue: `${formatVolumeDisplay(data.result.recommendedVolume)} ${unitLabel}`,
       mainLabel: 'Recommended amount',
-      subValue: `≈ ${formatWeightDisplay(data.result.recommendedWeight)} ${weightUnit}`,
-      subLabel: 'Estimated weight',
+      subValue: recSubVal,
+      subLabel: recSubVal ? 'Estimated weight' : undefined,
     },
     y
   );
@@ -727,7 +864,7 @@ export async function createBulkMaterialPdfDoc(data: BulkMaterialPdfData): Promi
   // 4. CALCULATION SUMMARY (Short, key steps only)
   y = drawSectionHeading(doc, 'CALCULATION SUMMARY', y);
 
-  const summaryRows = [
+  const summaryRows: Array<{ label: string; value: string; isFinal?: boolean }> = [
     {
       label: 'Base volume',
       value: `${formatVolumeDisplay(data.result.baseVolume)} ${unitLabel}`,
@@ -742,6 +879,13 @@ export async function createBulkMaterialPdfDoc(data: BulkMaterialPdfData): Promi
       isFinal: true,
     },
   ];
+
+  if (recSubVal) {
+    summaryRows.push({
+      label: 'Estimated weight',
+      value: recSubVal.replace(/^≈\s*/, ''),
+    });
+  }
 
   drawCalculationSummary(doc, summaryRows, y);
 
@@ -871,4 +1015,730 @@ export async function exportFlooringCalculatorPdf(data: FlooringPdfData): Promis
   const doc = await createFlooringCalculatorPdfDoc(data);
   doc.save('Measurely-Flooring-Calculator.pdf');
 }
+
+/**
+ * 8. TILE CALCULATOR PDF
+ */
+export async function createTileCalculatorPdfDoc(data: TilePdfData): Promise<jsPDF> {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const isMetric = data.unitSystem === 'metric';
+  const lenUnit = data.result.lenUnit;
+  const areaUnit = data.result.areaUnit;
+  const tileDimUnit = data.result.tileDimUnit;
+
+  // 1. HEADER
+  let y = await drawPdfHeader(doc, 'Tile Calculator');
+
+  // 2. YOUR RESULT
+  y = drawSectionHeading(doc, 'YOUR RESULT', y);
+  y = drawResultCards(
+    doc,
+    {
+      tag: 'YOU NEED',
+      mainValue: `${data.result.tilesNeeded.toLocaleString('en-US')} tiles`,
+      mainLabel: 'Base tiles needed',
+      subValue: `For ${formatAreaDisplay(data.result.area)} ${areaUnit}`,
+      subLabel: 'Surface area coverage',
+    },
+    {
+      tag: 'WHAT TO BUY',
+      mainValue: `${data.result.recommendedTiles.toLocaleString('en-US')} tiles`,
+      mainLabel: 'Recommended amount',
+      subValue: `Includes ${data.extraPercent}% extra`,
+      subLabel: 'Allowance for cuts & waste',
+    },
+    y
+  );
+
+  y += 9;
+
+  // 3. YOUR INPUTS
+  y = drawSectionHeading(doc, 'YOUR INPUTS', y);
+
+  const inputs: Array<{ label: string; value: string }> = [];
+
+  if (data.method === 'custom') {
+    inputs.push({
+      label: 'Area',
+      value: `${data.customArea || '0'} ${areaUnit}`,
+    });
+    inputs.push({
+      label: 'Shape',
+      value: 'Custom area',
+    });
+  } else if (data.method === 'circle') {
+    inputs.push({
+      label: 'Diameter',
+      value: `${data.diameter || '0'} ${lenUnit}`,
+    });
+    inputs.push({
+      label: 'Shape',
+      value: 'Circle',
+    });
+  } else {
+    inputs.push({
+      label: 'Surface dimensions',
+      value: `${data.length || '0'} × ${data.width || '0'} ${lenUnit}`,
+    });
+    inputs.push({
+      label: 'Shape',
+      value: 'Rectangle',
+    });
+  }
+
+  inputs.push({
+    label: 'Tile size',
+    value: `${data.tileLength} × ${data.tileWidth} ${tileDimUnit}`,
+  });
+
+  inputs.push({
+    label: 'Extra',
+    value: `${data.extraPercent}%`,
+  });
+
+  inputs.push({
+    label: 'Unit',
+    value: isMetric ? 'Metric' : 'US / Imperial',
+  });
+
+  y = drawInputCards(doc, inputs, y);
+  y += 9;
+
+  // 4. CALCULATION SUMMARY
+  y = drawSectionHeading(doc, 'CALCULATION SUMMARY', y);
+
+  const summaryRows = [
+    {
+      label: 'Surface area',
+      value: `${formatAreaDisplay(data.result.area)} ${areaUnit}`,
+    },
+    {
+      label: 'Single tile size',
+      value: `${data.tileLength} × ${data.tileWidth} ${tileDimUnit}`,
+    },
+    {
+      label: 'Single tile coverage',
+      value: `${formatAreaDisplay(data.result.singleTileArea)} ${areaUnit}`,
+    },
+    {
+      label: 'Base tiles needed',
+      value: `${data.result.tilesNeeded.toLocaleString('en-US')} tiles`,
+    },
+    {
+      label: 'Extra allowance',
+      value: `+${data.result.extraTiles.toLocaleString('en-US')} tiles (${data.extraPercent}%)`,
+    },
+    {
+      label: 'Recommended tiles to buy',
+      value: `${data.result.recommendedTiles.toLocaleString('en-US')} tiles`,
+      isFinal: true,
+    },
+  ];
+
+  drawCalculationSummary(doc, summaryRows, y);
+
+  // 5. FOOTER
+  drawPdfFooter(doc);
+
+  return doc;
+}
+
+/**
+ * Generate and download PDF for Tile Calculator
+ */
+export async function exportTileCalculatorPdf(data: TilePdfData): Promise<void> {
+  const doc = await createTileCalculatorPdfDoc(data);
+  doc.save('Measurely-Tile-Calculator.pdf');
+}
+
+/**
+ * 9. DRYWALL CALCULATOR PDF
+ */
+export async function createDrywallCalculatorPdfDoc(data: DrywallPdfData): Promise<jsPDF> {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const isMetric = data.unitSystem === 'metric';
+  const lenUnit = data.result.lenUnit;
+  const areaUnit = data.result.areaUnit;
+
+  // 1. HEADER
+  let y = await drawPdfHeader(doc, 'Drywall Calculator');
+
+  // 2. YOUR RESULT
+  y = drawSectionHeading(doc, 'YOUR RESULT', y);
+  y = drawResultCards(
+    doc,
+    {
+      tag: 'YOU NEED',
+      mainValue: `${data.result.baseSheets.toLocaleString('en-US')} sheets`,
+      mainLabel: 'Base sheets needed',
+      subValue: `For ${formatAreaDisplay(data.result.totalArea)} ${areaUnit}`,
+      subLabel: 'Surface area coverage',
+    },
+    {
+      tag: 'WHAT TO BUY',
+      mainValue: `${data.result.recommendedSheets.toLocaleString('en-US')} sheets`,
+      mainLabel: 'Recommended amount',
+      subValue: `Includes ${data.extraPercent}% extra`,
+      subLabel: 'Allowance for cuts & waste',
+    },
+    y
+  );
+
+  y += 9;
+
+  // 3. YOUR INPUTS
+  y = drawSectionHeading(doc, 'YOUR INPUTS', y);
+
+  const inputs: Array<{ label: string; value: string }> = [];
+
+  if (data.areaType === 'custom') {
+    inputs.push({
+      label: 'Area',
+      value: `${data.customArea || '0'} ${areaUnit}`,
+    });
+    inputs.push({
+      label: 'Area type',
+      value: 'Custom area',
+    });
+  } else {
+    inputs.push({
+      label: 'Wall/ceiling dimensions',
+      value: `${data.length || '0'} × ${data.width || '0'} ${lenUnit}`,
+    });
+    inputs.push({
+      label: 'Area type',
+      value: 'Rectangle',
+    });
+  }
+
+  inputs.push({
+    label: 'Drywall sheet size',
+    value: `${data.sheetLength} × ${data.sheetWidth} ${lenUnit}`,
+  });
+
+  inputs.push({
+    label: 'Extra',
+    value: `${data.extraPercent}%`,
+  });
+
+  inputs.push({
+    label: 'Unit',
+    value: isMetric ? 'Metric' : 'US / Imperial',
+  });
+
+  y = drawInputCards(doc, inputs, y);
+  y += 9;
+
+  // 4. CALCULATION SUMMARY
+  y = drawSectionHeading(doc, 'CALCULATION SUMMARY', y);
+
+  const summaryRows = [
+    {
+      label: 'Total area',
+      value: `${formatAreaDisplay(data.result.totalArea)} ${areaUnit}`,
+    },
+    {
+      label: 'Drywall sheet size',
+      value: `${data.sheetLength} × ${data.sheetWidth} ${lenUnit}`,
+    },
+    {
+      label: 'Single sheet coverage',
+      value: `${formatAreaDisplay(data.result.singleSheetArea)} ${areaUnit}`,
+    },
+    {
+      label: 'Area including waste',
+      value: `${formatAreaDisplay(data.result.areaWithWaste)} ${areaUnit}`,
+    },
+    {
+      label: 'Base sheets needed',
+      value: `${data.result.baseSheets.toLocaleString('en-US')} sheets`,
+    },
+    {
+      label: 'Extra allowance',
+      value: `+${data.result.extraSheets.toLocaleString('en-US')} sheets (${data.extraPercent}%)`,
+    },
+    {
+      label: 'Recommended sheets to buy',
+      value: `${data.result.recommendedSheets.toLocaleString('en-US')} sheets`,
+      isFinal: true,
+    },
+  ];
+
+  drawCalculationSummary(doc, summaryRows, y);
+
+  // 5. FOOTER
+  drawPdfFooter(doc);
+
+  return doc;
+}
+
+/**
+ * Generate and download PDF for Drywall Calculator
+ */
+export async function exportDrywallCalculatorPdf(data: DrywallPdfData): Promise<void> {
+  const doc = await createDrywallCalculatorPdfDoc(data);
+  doc.save('Measurely-Drywall-Calculator.pdf');
+}
+
+/**
+ * 10. PAVER CALCULATOR PDF
+ */
+export async function createPaverCalculatorPdfDoc(data: PaverPdfData): Promise<jsPDF> {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const isMetric = data.unitSystem === 'metric';
+  const lenUnit = data.result.lenUnit;
+  const areaUnit = data.result.areaUnit;
+  const paverDimUnit = data.result.paverDimUnit;
+
+  // 1. HEADER
+  let y = await drawPdfHeader(doc, 'Paver Calculator');
+
+  // 2. YOUR RESULT
+  y = drawSectionHeading(doc, 'YOUR RESULT', y);
+  y = drawResultCards(
+    doc,
+    {
+      tag: 'YOU NEED',
+      mainValue: `${data.result.paversNeeded.toLocaleString('en-US')} pavers`,
+      mainLabel: 'Base pavers needed',
+      subValue: `For ${formatAreaDisplay(data.result.totalArea)} ${areaUnit}`,
+      subLabel: 'Surface area coverage',
+    },
+    {
+      tag: 'WHAT TO BUY',
+      mainValue: `${data.result.recommendedPavers.toLocaleString('en-US')} pavers`,
+      mainLabel: 'Recommended amount',
+      subValue: `Includes ${data.extraPercent}% extra`,
+      subLabel: 'Allowance for cuts & breakage',
+    },
+    y
+  );
+
+  y += 9;
+
+  // 3. YOUR INPUTS
+  y = drawSectionHeading(doc, 'YOUR INPUTS', y);
+
+  const inputs: Array<{ label: string; value: string }> = [];
+
+  if (data.areaType === 'custom') {
+    inputs.push({
+      label: 'Area',
+      value: `${data.customArea || '0'} ${areaUnit}`,
+    });
+    inputs.push({
+      label: 'Area type',
+      value: 'Custom area',
+    });
+  } else if (data.areaType === 'circle') {
+    inputs.push({
+      label: 'Diameter',
+      value: `${data.diameter || '0'} ${lenUnit}`,
+    });
+    inputs.push({
+      label: 'Area type',
+      value: 'Circle',
+    });
+  } else {
+    inputs.push({
+      label: 'Surface dimensions',
+      value: `${data.length || '0'} × ${data.width || '0'} ${lenUnit}`,
+    });
+    inputs.push({
+      label: 'Area type',
+      value: 'Rectangle',
+    });
+  }
+
+  inputs.push({
+    label: 'Paver size',
+    value: `${data.paverLength} × ${data.paverWidth} ${paverDimUnit}`,
+  });
+
+  inputs.push({
+    label: 'Extra',
+    value: `${data.extraPercent}%`,
+  });
+
+  inputs.push({
+    label: 'Unit',
+    value: isMetric ? 'Metric' : 'US / Imperial',
+  });
+
+  y = drawInputCards(doc, inputs, y);
+  y += 9;
+
+  // 4. CALCULATION SUMMARY
+  y = drawSectionHeading(doc, 'CALCULATION SUMMARY', y);
+
+  const summaryRows = [
+    {
+      label: 'Total area',
+      value: `${formatAreaDisplay(data.result.totalArea)} ${areaUnit}`,
+    },
+    {
+      label: 'Area including extra',
+      value: `${formatAreaDisplay(data.result.areaWithExtra)} ${areaUnit}`,
+    },
+    {
+      label: 'Single paver size',
+      value: `${data.paverLength} × ${data.paverWidth} ${paverDimUnit}`,
+    },
+    {
+      label: 'Single paver coverage',
+      value: `${formatAreaDisplay(data.result.singlePaverArea)} ${areaUnit}`,
+    },
+    {
+      label: 'Base pavers needed',
+      value: `${data.result.paversNeeded.toLocaleString('en-US')} pavers`,
+    },
+    {
+      label: 'Extra allowance',
+      value: `+${data.result.extraPavers.toLocaleString('en-US')} pavers (${data.extraPercent}%)`,
+    },
+    {
+      label: 'Recommended pavers to buy',
+      value: `${data.result.recommendedPavers.toLocaleString('en-US')} pavers`,
+      isFinal: true,
+    },
+  ];
+
+  drawCalculationSummary(doc, summaryRows, y);
+
+  // 5. FOOTER
+  drawPdfFooter(doc);
+
+  return doc;
+}
+
+/**
+ * Generate and download PDF for Paver Calculator
+ */
+export async function exportPaverCalculatorPdf(data: PaverPdfData): Promise<void> {
+  const doc = await createPaverCalculatorPdfDoc(data);
+  doc.save('Measurely-Paver-Calculator.pdf');
+}
+
+/**
+ * 12. SOD CALCULATOR PDF
+ */
+export async function createSodCalculatorPdfDoc(data: SodPdfData): Promise<jsPDF> {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const isMetric = data.unitSystem === 'metric';
+  const lenUnit = data.result.lenUnit;
+  const areaUnit = data.result.areaUnit;
+
+  // 1. HEADER
+  let y = await drawPdfHeader(doc, 'Sod Calculator');
+
+  // 2. YOUR RESULT
+  y = drawSectionHeading(doc, 'YOUR RESULT', y);
+  y = drawResultCards(
+    doc,
+    {
+      tag: 'YOU NEED',
+      mainValue: `${formatAreaDisplay(data.result.totalArea)} ${areaUnit}`,
+      mainLabel: 'Lawn surface area',
+      subValue: 'Exact area',
+      subLabel: 'Base measurement',
+    },
+    {
+      tag: 'WHAT TO BUY',
+      mainValue: `${formatAreaDisplay(data.result.recommendedArea)} ${areaUnit}`,
+      mainLabel: 'Recommended sod to buy',
+      subValue: `Includes ${data.extraPercent}% extra`,
+      subLabel: 'Cut & edge allowance',
+    },
+    y
+  );
+
+  y += 9;
+
+  // 3. YOUR INPUTS
+  y = drawSectionHeading(doc, 'YOUR INPUTS', y);
+
+  const inputs: Array<{ label: string; value: string }> = [];
+
+  if (data.areaType === 'custom') {
+    inputs.push({
+      label: 'Area',
+      value: `${data.customArea || '0'} ${areaUnit}`,
+    });
+    inputs.push({
+      label: 'Area type',
+      value: 'Custom area',
+    });
+  } else if (data.areaType === 'circle') {
+    inputs.push({
+      label: 'Lawn diameter',
+      value: `${data.diameter || '0'} ${lenUnit}`,
+    });
+    inputs.push({
+      label: 'Area type',
+      value: 'Circle',
+    });
+  } else {
+    inputs.push({
+      label: 'Lawn dimensions',
+      value: `${data.length || '0'} × ${data.width || '0'} ${lenUnit}`,
+    });
+    inputs.push({
+      label: 'Area type',
+      value: 'Rectangle',
+    });
+  }
+
+  inputs.push({
+    label: 'Extra',
+    value: `${data.extraPercent}%`,
+  });
+
+  inputs.push({
+    label: 'Unit',
+    value: isMetric ? 'Metric' : 'US / Imperial',
+  });
+
+  y = drawInputCards(doc, inputs, y);
+  y += 9;
+
+  // 4. CALCULATION SUMMARY
+  y = drawSectionHeading(doc, 'CALCULATION SUMMARY', y);
+
+  const summaryRows = [
+    {
+      label: 'Total lawn area',
+      value: `${formatAreaDisplay(data.result.totalArea)} ${areaUnit}`,
+    },
+    {
+      label: 'Extra allowance',
+      value: `+${formatAreaDisplay(data.result.extraArea)} ${areaUnit} (${data.extraPercent}%)`,
+    },
+    {
+      label: 'Recommended sod amount',
+      value: `${formatAreaDisplay(data.result.recommendedArea)} ${areaUnit}`,
+      isFinal: true,
+    },
+  ];
+
+  drawCalculationSummary(doc, summaryRows, y);
+
+  // 5. FOOTER
+  drawPdfFooter(doc);
+
+  return doc;
+}
+
+/**
+ * Generate and download PDF for Sod Calculator
+ */
+export async function exportSodCalculatorPdf(data: SodPdfData): Promise<void> {
+  const doc = await createSodCalculatorPdfDoc(data);
+  doc.save('Measurely-Sod-Calculator.pdf');
+}
+
+/**
+ * 13. ROOFING CALCULATOR PDF
+ */
+export async function createRoofingCalculatorPdfDoc(data: RoofingPdfData): Promise<jsPDF> {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const isMetric = data.unitSystem === 'metric';
+  const lenUnit = data.result.lenUnit;
+  const areaUnit = data.result.areaUnit;
+
+  // 1. HEADER
+  let y = await drawPdfHeader(doc, 'Roofing Calculator');
+
+  // 2. YOUR RESULT
+  y = drawSectionHeading(doc, 'YOUR RESULT', y);
+  y = drawResultCards(
+    doc,
+    {
+      tag: 'YOU NEED',
+      mainValue: `${formatAreaDisplay(data.result.roofArea)} ${areaUnit}`,
+      mainLabel: 'Roof surface area',
+      subValue: 'Exact area',
+      subLabel: 'Base measurement',
+    },
+    {
+      tag: 'WHAT TO BUY',
+      mainValue: `${formatAreaDisplay(data.result.recommendedArea)} ${areaUnit}`,
+      mainLabel: 'Recommended roofing material',
+      subValue: `Includes ${data.extraPercent}% extra`,
+      subLabel: 'Ridge, valley & cut allowance',
+    },
+    y
+  );
+
+  y += 9;
+
+  // 3. YOUR INPUTS
+  y = drawSectionHeading(doc, 'YOUR INPUTS', y);
+
+  const inputs: Array<{ label: string; value: string }> = [];
+
+  if (data.areaType === 'custom') {
+    inputs.push({
+      label: 'Area',
+      value: `${data.customArea || '0'} ${areaUnit}`,
+    });
+    inputs.push({
+      label: 'Area type',
+      value: 'Custom area',
+    });
+  } else {
+    inputs.push({
+      label: 'Roof dimensions',
+      value: `${data.length || '0'} × ${data.width || '0'} ${lenUnit}`,
+    });
+    inputs.push({
+      label: 'Area type',
+      value: 'Rectangle',
+    });
+  }
+
+  inputs.push({
+    label: 'Extra',
+    value: `${data.extraPercent}%`,
+  });
+
+  inputs.push({
+    label: 'Unit',
+    value: isMetric ? 'Metric' : 'US / Imperial',
+  });
+
+  y = drawInputCards(doc, inputs, y);
+  y += 9;
+
+  // 4. CALCULATION SUMMARY
+  y = drawSectionHeading(doc, 'CALCULATION SUMMARY', y);
+
+  const summaryRows = [
+    {
+      label: 'Total roof area',
+      value: `${formatAreaDisplay(data.result.roofArea)} ${areaUnit}`,
+    },
+    {
+      label: 'Extra allowance',
+      value: `+${formatAreaDisplay(data.result.extraArea)} ${areaUnit} (${data.extraPercent}%)`,
+    },
+    {
+      label: 'Recommended roofing material area',
+      value: `${formatAreaDisplay(data.result.recommendedArea)} ${areaUnit}`,
+      isFinal: true,
+    },
+  ];
+
+  drawCalculationSummary(doc, summaryRows, y);
+
+  // 5. FOOTER
+  drawPdfFooter(doc);
+
+  return doc;
+}
+
+/**
+ * Generate and download PDF for Roofing Calculator
+ */
+export async function exportRoofingCalculatorPdf(data: RoofingPdfData): Promise<void> {
+  const doc = await createRoofingCalculatorPdfDoc(data);
+  doc.save('Measurely-Roofing-Calculator.pdf');
+}
+
+/**
+ * 14. FENCE CALCULATOR PDF
+ */
+export async function createFenceCalculatorPdfDoc(data: FencePdfData): Promise<jsPDF> {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const isMetric = data.unitSystem === 'metric';
+  const lenUnit = data.result.lenUnit;
+  const areaUnit = data.result.areaUnit;
+
+  // 1. HEADER
+  let y = await drawPdfHeader(doc, 'Fence Calculator');
+
+  // 2. YOUR RESULT
+  y = drawSectionHeading(doc, 'YOUR RESULT', y);
+  y = drawResultCards(
+    doc,
+    {
+      tag: 'YOU NEED',
+      mainValue: `${formatAreaDisplay(data.result.fenceArea)} ${areaUnit}`,
+      mainLabel: 'Fence surface area',
+      subValue: 'Exact area',
+      subLabel: 'Base measurement',
+    },
+    {
+      tag: 'WHAT TO BUY',
+      mainValue: `${formatAreaDisplay(data.result.recommendedArea)} ${areaUnit}`,
+      mainLabel: 'Recommended fence material',
+      subValue: `Includes ${data.extraPercent}% extra`,
+      subLabel: 'Cutting, trimming & waste buffer',
+    },
+    y
+  );
+
+  y += 9;
+
+  // 3. YOUR INPUTS
+  y = drawSectionHeading(doc, 'YOUR INPUTS', y);
+
+  const inputs = [
+    {
+      label: 'Fence length',
+      value: `${data.length || '0'} ${lenUnit}`,
+    },
+    {
+      label: 'Fence height',
+      value: `${data.height || '0'} ${lenUnit}`,
+    },
+    {
+      label: 'Extra',
+      value: `${data.extraPercent}%`,
+    },
+    {
+      label: 'Unit',
+      value: isMetric ? 'Metric' : 'US / Imperial',
+    },
+  ];
+
+  y = drawInputCards(doc, inputs, y);
+  y += 9;
+
+  // 4. CALCULATION SUMMARY
+  y = drawSectionHeading(doc, 'CALCULATION SUMMARY', y);
+
+  const summaryRows = [
+    {
+      label: 'Total fence area',
+      value: `${formatAreaDisplay(data.result.fenceArea)} ${areaUnit}`,
+    },
+    {
+      label: 'Extra allowance',
+      value: `+${formatAreaDisplay(data.result.extraArea)} ${areaUnit} (${data.extraPercent}%)`,
+    },
+    {
+      label: 'Recommended fence material area',
+      value: `${formatAreaDisplay(data.result.recommendedArea)} ${areaUnit}`,
+      isFinal: true,
+    },
+  ];
+
+  drawCalculationSummary(doc, summaryRows, y);
+
+  // 5. FOOTER
+  drawPdfFooter(doc);
+
+  return doc;
+}
+
+/**
+ * Generate and download PDF for Fence Calculator
+ */
+export async function exportFenceCalculatorPdf(data: FencePdfData): Promise<void> {
+  const doc = await createFenceCalculatorPdfDoc(data);
+  doc.save('Measurely-Fence-Calculator.pdf');
+}
+
+
+
 

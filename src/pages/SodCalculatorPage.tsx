@@ -1,14 +1,14 @@
 import { useState, useEffect, useId, FormEvent, ChangeEvent } from 'react';
-import { ArrowRight, ChevronDown, ChevronUp, FileDown, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileDown, Info, ArrowRight } from 'lucide-react';
 import { Link } from '../context/NavigationContext';
-import { exportFlooringCalculatorPdf } from '../utils/pdfExport';
+import { exportSodCalculatorPdf } from '../utils/pdfExport';
 
 type UnitSystem = 'metric' | 'us';
 type MeasureMethod = 'rectangle' | 'circle' | 'custom';
 type ExtraWastePercent = '0' | '5' | '10' | '15';
 
-interface FlooringCalculationResult {
-  floorArea: number;
+interface SodCalculationResult {
+  totalArea: number;
   extraArea: number;
   recommendedArea: number;
   extraPercent: number;
@@ -19,20 +19,20 @@ interface FlooringCalculationResult {
 function formatAreaDisplay(val: number): string {
   if (val <= 0 || isNaN(val)) return '0';
   const rounded = Math.round(val * 100) / 100;
-  return rounded.toString();
+  return rounded.toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
-export function FlooringCalculatorPage() {
+export function SodCalculatorPage() {
   const [unitSystem, setUnitSystem] = useState<UnitSystem>('metric');
   const [method, setMethod] = useState<MeasureMethod>('rectangle');
-  const [length, setLength] = useState<string>('5');
-  const [width, setWidth] = useState<string>('4');
-  const [diameter, setDiameter] = useState<string>('4');
-  const [customArea, setCustomArea] = useState<string>('20');
+  const [length, setLength] = useState<string>('10');
+  const [width, setWidth] = useState<string>('8');
+  const [diameter, setDiameter] = useState<string>('10');
+  const [customArea, setCustomArea] = useState<string>('80');
   const [extraWaste, setExtraWaste] = useState<ExtraWastePercent>('10');
   const [showDetails, setShowDetails] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<FlooringCalculationResult | null>(null);
+  const [result, setResult] = useState<SodCalculationResult | null>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
 
   const lengthId = useId();
@@ -90,14 +90,14 @@ export function FlooringCalculatorPage() {
   };
 
   // Pure calculation logic
-  const calculateFlooring = (
+  const calculateSod = (
     currentMethod: MeasureMethod,
     lStr: string,
     wStr: string,
     diaStr: string,
     customAreaStr: string,
     wastePctStr: ExtraWastePercent
-  ): FlooringCalculationResult | null => {
+  ): SodCalculationResult | null => {
     let baseArea = 0;
 
     if (currentMethod === 'rectangle') {
@@ -130,7 +130,7 @@ export function FlooringCalculatorPage() {
     const recommended = baseArea * (1 + wasteFactor);
 
     return {
-      floorArea: Math.round(baseArea * 100) / 100,
+      totalArea: Math.round(baseArea * 100) / 100,
       extraArea: Math.round(extra * 100) / 100,
       recommendedArea: Math.round(recommended * 100) / 100,
       extraPercent: wastePercent,
@@ -139,87 +139,128 @@ export function FlooringCalculatorPage() {
     };
   };
 
-  // Live recalculate
+  // Calculate on initial load and keep updated
   useEffect(() => {
-    const res = calculateFlooring(method, length, width, diameter, customArea, extraWaste);
+    const res = calculateSod(method, length, width, diameter, customArea, extraWaste);
     if (res) {
       setResult(res);
       setError(null);
     }
-  }, [method, length, width, diameter, customArea, extraWaste, unitSystem]);
+  }, [unitSystem, method, length, width, diameter, customArea, extraWaste]);
 
-  const handleCalculate = (e: FormEvent) => {
-    e.preventDefault();
-    const res = calculateFlooring(method, length, width, diameter, customArea, extraWaste);
-    if (!res) {
-      if (method === 'rectangle') {
-        setError('Please enter a valid length and width greater than 0.');
-      } else if (method === 'circle') {
-        setError('Please enter a valid diameter greater than 0.');
-      } else {
-        setError('Please enter a valid area greater than 0.');
-      }
-      setResult(null);
-      return;
-    }
-
-    setError(null);
-    setResult(res);
-
-    // Smooth scroll to result
-    const resultElement = document.getElementById('result-box');
-    if (resultElement) {
-      resultElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const handlePositiveInput = (setter: (val: string) => void) => (e: ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val === '' || (!isNaN(Number(val)) && Number(val) >= 0)) {
+      setter(val);
+      if (error) setError(null);
     }
   };
 
-  const handlePositiveInput = (setter: (v: string) => void) => (e: ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    if (val === '' || (!val.includes('-') && !isNaN(Number(val)))) {
-      setter(val);
+  const handleCalculate = (e: FormEvent) => {
+    e.preventDefault();
+
+    if (method === 'rectangle') {
+      const l = parseFloat(length);
+      const w = parseFloat(width);
+      if (isNaN(l) || l <= 0 || isNaN(w) || w <= 0) {
+        setError('Please enter positive numbers for lawn length and width.');
+        return;
+      }
+    } else if (method === 'circle') {
+      const dia = parseFloat(diameter);
+      if (isNaN(dia) || dia <= 0) {
+        setError('Please enter a positive diameter for the circular lawn area.');
+        return;
+      }
+    } else {
+      const ca = parseFloat(customArea);
+      if (isNaN(ca) || ca <= 0) {
+        setError('Please enter a valid lawn area.');
+        return;
+      }
+    }
+
+    const calculated = calculateSod(method, length, width, diameter, customArea, extraWaste);
+    if (!calculated) {
+      setError('Please check your input values.');
+      return;
+    }
+
+    setResult(calculated);
+    setError(null);
+
+    // Scroll to results on mobile
+    const resBox = document.getElementById('result-box');
+    if (resBox) {
+      resBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   };
 
   const handleDownloadPdf = async () => {
     if (!result) return;
+    setIsGeneratingPdf(true);
     try {
-      setIsGeneratingPdf(true);
-      await exportFlooringCalculatorPdf({
+      await exportSodCalculatorPdf({
         unitSystem,
-        method,
+        areaType: method,
         length: method === 'rectangle' ? length : undefined,
         width: method === 'rectangle' ? width : undefined,
         diameter: method === 'circle' ? diameter : undefined,
         customArea: method === 'custom' ? customArea : undefined,
         extraPercent: extraWaste,
-        result,
+        result: {
+          totalArea: result.totalArea,
+          extraArea: result.extraArea,
+          recommendedArea: result.recommendedArea,
+          extraPercent: result.extraPercent,
+          lenUnit: result.lenUnit,
+          areaUnit: result.areaUnit,
+        },
       });
     } catch (err) {
-      console.error('Failed to export Flooring calculation PDF:', err);
+      console.error('Failed to export PDF:', err);
     } finally {
       setIsGeneratingPdf(false);
     }
   };
 
   return (
-    <main className="flex-1 max-w-xl w-full mx-auto px-5 py-8 sm:py-12 flex flex-col justify-center">
-      {/* 1. Title & Intro */}
-      <div className="mb-6">
-        <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-display font-extrabold text-[#1A1918] tracking-tight leading-tight mb-2.5">
-          Flooring Calculator
+    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 font-sans text-[#1A1918]">
+      {/* 1. Page Header */}
+      <div className="mb-6 sm:mb-8 space-y-2">
+        <div className="flex items-center gap-2 text-xs text-[#6E675E] font-medium font-sans">
+          <Link href="/" className="hover:text-[#163A5F] transition-colors">
+            Measurely
+          </Link>
+          <span>/</span>
+          <Link href="/tools" className="hover:text-[#163A5F] transition-colors">
+            Tools
+          </Link>
+          <span>/</span>
+          <span className="text-[#1A1918]">Sod Calculator</span>
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-[#1A1918] tracking-tight">
+          Sod Calculator
         </h1>
-        <p className="text-base sm:text-lg text-[#4E4942] leading-relaxed font-sans">
-          Calculate exactly how much flooring material you need for any room or renovation project. Enter your room dimensions or custom floor area, add a waste allowance for cuts, and estimate total square footage or square metres.
+        <p className="text-sm sm:text-base text-[#6E675E] font-sans leading-relaxed">
+          Calculate how much sod or turf you need for your new lawn in square feet or square meters. Enter your yard dimensions and select extra waste allowance for curved borders and edge trimming.
         </p>
       </div>
 
       {/* 2. Unit System Selector */}
-      <section aria-label="Unit system selection" className="mb-7">
-        <div className="grid grid-cols-2 gap-1.5 p-1.5 bg-[#EDE5DA] rounded-xl border border-[#DDD3C5] shadow-[inset_0_1px_3px_rgba(0,0,0,0.06)]">
+      <section aria-labelledby="unit-system-heading" className="mb-6">
+        <h2 id="unit-system-heading" className="sr-only">
+          Measurement System
+        </h2>
+        <div
+          role="radiogroup"
+          aria-label="Measurement unit system"
+          className="grid grid-cols-2 p-1 rounded-xl bg-[#F5EFE6] border border-[#DFD5C6] shadow-inner"
+        >
           <button
             id="unit-metric-btn"
             type="button"
-            aria-label="Switch to Metric units (metres, square metres)"
+            aria-label="Switch to Metric units (meters, square meters)"
             aria-pressed={isMetric}
             onClick={() => handleUnitChange('metric')}
             className={`min-h-[46px] py-2.5 px-3.5 text-xs sm:text-sm md:text-base font-mono tracking-wider uppercase rounded-lg transition-all duration-150 cursor-pointer flex items-center justify-center gap-2 ${
@@ -250,7 +291,7 @@ export function FlooringCalculatorPage() {
       </section>
 
       {/* 3. Form Workspace */}
-      <form onSubmit={handleCalculate} aria-label="Flooring calculation form" className="space-y-6">
+      <form onSubmit={handleCalculate} aria-label="Sod calculation form" className="space-y-6">
         <div className="bg-[#FFFFFF] border border-[#E6DDD1] rounded-2xl p-6 sm:p-8 shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-6">
           {/* Measurement Method Selector */}
           <div className="space-y-2.5 pb-4 border-b border-[#EAE0D5]">
@@ -317,7 +358,7 @@ export function FlooringCalculatorPage() {
                     htmlFor={lengthId}
                     className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans"
                   >
-                    Floor length
+                    Lawn length
                   </label>
                   <div className="relative">
                     <input
@@ -325,7 +366,7 @@ export function FlooringCalculatorPage() {
                       type="number"
                       step="any"
                       min="0"
-                      placeholder={isMetric ? 'e.g. 5' : 'e.g. 16'}
+                      placeholder={isMetric ? 'e.g. 10' : 'e.g. 30'}
                       value={length}
                       onChange={handlePositiveInput(setLength)}
                       className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-10 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
@@ -342,7 +383,7 @@ export function FlooringCalculatorPage() {
                     htmlFor={widthId}
                     className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans"
                   >
-                    Floor width
+                    Lawn width
                   </label>
                   <div className="relative">
                     <input
@@ -350,7 +391,7 @@ export function FlooringCalculatorPage() {
                       type="number"
                       step="any"
                       min="0"
-                      placeholder={isMetric ? 'e.g. 4' : 'e.g. 12'}
+                      placeholder={isMetric ? 'e.g. 8' : 'e.g. 25'}
                       value={width}
                       onChange={handlePositiveInput(setWidth)}
                       className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-10 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
@@ -362,13 +403,12 @@ export function FlooringCalculatorPage() {
                 </div>
               </div>
             ) : method === 'circle' ? (
-              /* Circle: Diameter */
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 max-w-sm">
                 <label
                   htmlFor={diameterId}
                   className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans"
                 >
-                  Diameter
+                  Lawn diameter
                 </label>
                 <div className="relative">
                   <input
@@ -376,7 +416,7 @@ export function FlooringCalculatorPage() {
                     type="number"
                     step="any"
                     min="0"
-                    placeholder={isMetric ? 'e.g. 4' : 'e.g. 12'}
+                    placeholder={isMetric ? 'e.g. 10' : 'e.g. 30'}
                     value={diameter}
                     onChange={handlePositiveInput(setDiameter)}
                     className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-10 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
@@ -387,34 +427,28 @@ export function FlooringCalculatorPage() {
                 </div>
               </div>
             ) : (
-              /* Custom Area */
-              <div className="space-y-2">
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor={areaId}
-                    className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans"
-                  >
-                    Area
-                  </label>
-                  <div className="relative">
-                    <input
-                      id={areaId}
-                      type="number"
-                      step="any"
-                      min="0"
-                      placeholder={isMetric ? 'e.g. 20' : 'e.g. 200'}
-                      value={customArea}
-                      onChange={handlePositiveInput(setCustomArea)}
-                      className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-12 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
-                    />
-                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6E675E] pointer-events-none">
-                      {areaUnit}
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-1 text-xs text-[#6E675E] font-sans leading-relaxed">
-                  <p>For irregular rooms or multiple areas, enter the total floor area you want to cover.</p>
-                  <p>Measure each section separately and add the areas together.</p>
+              /* Custom Area: ONLY Show Area and hide other dimensions */
+              <div className="space-y-1.5 max-w-sm">
+                <label
+                  htmlFor={areaId}
+                  className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans"
+                >
+                  Lawn area
+                </label>
+                <div className="relative">
+                  <input
+                    id={areaId}
+                    type="number"
+                    step="any"
+                    min="0"
+                    placeholder={isMetric ? 'e.g. 80' : 'e.g. 800'}
+                    value={customArea}
+                    onChange={handlePositiveInput(setCustomArea)}
+                    className="w-full bg-[#FDFBF7] border border-[#DFD5C6] focus:bg-[#FFFFFF] focus:border-[#163A5F] focus:ring-2 focus:ring-[#163A5F]/15 rounded-xl px-3.5 py-2.5 pr-14 text-base font-mono text-[#1A1918] font-semibold outline-hidden transition-all"
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6E675E] pointer-events-none">
+                    {areaUnit}
+                  </span>
                 </div>
               </div>
             )}
@@ -424,7 +458,7 @@ export function FlooringCalculatorPage() {
           <div className="pt-2 border-t border-[#EAE0D5] space-y-2">
             <div className="flex items-center justify-between">
               <label className="block text-xs sm:text-sm font-semibold text-[#1A1918] font-sans">
-                Extra material / waste
+                Extra sod allowance / waste
               </label>
             </div>
             <div
@@ -451,7 +485,7 @@ export function FlooringCalculatorPage() {
               ))}
             </div>
             <p className="text-xs text-[#6E675E] font-sans pt-1 leading-relaxed">
-              Adding 10% extra material helps cover room cuts, corner fitting, and waste during installation.
+              Adding 10% extra is standard practice for lawn sod to cover perimeter trimming, curved garden beds, and edge cuts.
             </p>
           </div>
 
@@ -459,7 +493,7 @@ export function FlooringCalculatorPage() {
           <div className="p-3.5 rounded-xl bg-[#FAF6F0] border border-[#EAE0D5] flex items-start gap-2.5 text-xs text-[#5C554B] leading-relaxed font-sans">
             <Info className="w-4 h-4 text-[#163A5F] shrink-0 mt-0.5" />
             <span>
-              This calculator estimates the amount of flooring needed for a floor. It can be used for laminate, vinyl, hardwood, carpet, and similar flooring materials.
+              This calculator provides the total lawn area and recommended sod needed to cover your yard with cutting waste included.
             </span>
           </div>
         </div>
@@ -477,11 +511,11 @@ export function FlooringCalculatorPage() {
         {/* Submit Button */}
         <div>
           <button
-            id="calculate-flooring-btn"
+            id="calculate-sod-btn"
             type="submit"
             className="w-full min-h-[50px] py-3.5 px-6 rounded-xl bg-[#163A5F] text-[#FFFFFF] text-base font-sans font-bold shadow-[0_3px_12px_rgba(22,58,95,0.2)] hover:bg-[#112F4D] active:scale-[0.99] transition-all cursor-pointer"
           >
-            Calculate flooring ↓
+            Calculate sod ↓
           </button>
         </div>
       </form>
@@ -503,14 +537,14 @@ export function FlooringCalculatorPage() {
               </span>
               <div className="flex items-baseline gap-2.5 flex-wrap mt-1">
                 <span className="text-5xl sm:text-6xl font-display font-extrabold text-[#0B6E54] tracking-tight">
-                  {formatAreaDisplay(result.floorArea)}
+                  {formatAreaDisplay(result.totalArea)}
                 </span>
                 <span className="text-2xl sm:text-3xl font-display font-bold text-[#0B6E54]">
                   {result.areaUnit}
                 </span>
               </div>
               <div className="text-sm font-semibold text-[#0B6E54] font-sans mt-1">
-                Floor area
+                Lawn surface area
               </div>
             </div>
           </div>
@@ -519,61 +553,67 @@ export function FlooringCalculatorPage() {
           <div className="p-5 sm:p-6 rounded-xl bg-[#FAF6F0] border border-[#E6DDD1] space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div className="space-y-1">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#6E675E] font-sans">
-                  WHAT TO BUY
-                </span>
-                <div className="flex items-baseline gap-2.5 flex-wrap mt-0.5">
-                  <span className="text-4xl sm:text-5xl font-display font-bold text-[#1A1918] tracking-tight">
-                    {formatAreaDisplay(result.recommendedArea)}
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#6E675E] font-sans">
+                    WHAT TO BUY
                   </span>
-                  <span className="text-2xl sm:text-3xl font-display font-bold text-[#1A1918]">
-                    {result.areaUnit}
-                  </span>
-                </div>
-                <div className="text-sm font-semibold text-[#163A5F] font-sans mt-1">
-                  Recommended amount
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="text-3xl sm:text-4xl font-display font-bold text-[#163A5F]">
+                      {formatAreaDisplay(result.recommendedArea)}
+                    </span>
+                    <span className="text-xl sm:text-2xl font-display font-semibold text-[#163A5F]">
+                      {result.areaUnit}
+                    </span>
+                  </div>
                 </div>
                 <p className="text-xs text-[#6E675E] font-sans mt-1">
                   {result.extraPercent > 0
-                    ? `Includes ${result.extraPercent}% extra material for cuts and waste.`
-                    : 'Does not include extra material for cuts.'}
+                    ? `Includes +${result.extraPercent}% extra for curves, borders, and cutting waste.`
+                    : 'Exact lawn area without extra allowance.'}
                 </p>
               </div>
 
               <button
-                id="view-calculation-details-btn"
+                id="download-sod-pdf-btn"
                 type="button"
-                onClick={() => setShowDetails((prev) => !prev)}
-                className="inline-flex items-center gap-1.5 text-xs font-sans font-bold text-[#163A5F] hover:underline cursor-pointer py-1 self-start shrink-0"
-                aria-expanded={showDetails}
-                aria-controls="calculation-details-panel"
+                onClick={handleDownloadPdf}
+                disabled={isGeneratingPdf}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-[#DFD5C6] bg-[#FFFFFF] hover:bg-[#FAF6F0] text-[#163A5F] text-xs sm:text-sm font-sans font-bold shadow-xs hover:border-[#163A5F] transition-all cursor-pointer shrink-0 disabled:opacity-50"
               >
-                <span>{showDetails ? 'Hide calculation details' : 'View calculation details'}</span>
-                {showDetails ? (
-                  <ChevronUp className="w-3.5 h-3.5" />
-                ) : (
-                  <ChevronDown className="w-3.5 h-3.5" />
-                )}
+                <FileDown className="w-4 h-4 text-[#163A5F]" />
+                <span>{isGeneratingPdf ? 'Creating PDF...' : 'Download PDF'}</span>
               </button>
             </div>
           </div>
 
-          {/* 3. Collapsible Details */}
+          {/* 3. VIEW CALCULATION DETAILS */}
+          <div className="pt-2">
+            <button
+              id="toggle-details-btn"
+              type="button"
+              onClick={() => setShowDetails(!showDetails)}
+              className="w-full flex items-center justify-between py-2 text-xs font-sans font-semibold text-[#6E675E] hover:text-[#1A1918] transition-colors cursor-pointer"
+            >
+              <span>{showDetails ? 'Hide calculation details' : 'View calculation details'}</span>
+              {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          </div>
+
           {showDetails && (
             <div
-              id="calculation-details-panel"
-              className="p-5 rounded-xl bg-[#FAF6F0] border border-[#E4DCD0] space-y-2.5 font-sans text-xs sm:text-sm animate-in fade-in duration-150"
+              id="details-panel"
+              className="p-4 rounded-xl bg-[#FAF6F0] border border-[#EAE0D5] text-xs font-sans space-y-2 animate-in fade-in duration-150"
             >
               {method === 'rectangle' ? (
                 <>
                   <div className="flex justify-between items-center py-0.5">
-                    <span className="text-[#6E675E]">Floor length</span>
+                    <span className="text-[#6E675E]">Lawn length</span>
                     <span className="font-semibold text-[#1A1918]">
                       {length} {result.lenUnit}
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-0.5">
-                    <span className="text-[#6E675E]">Floor width</span>
+                    <span className="text-[#6E675E]">Lawn width</span>
                     <span className="font-semibold text-[#1A1918]">
                       {width} {result.lenUnit}
                     </span>
@@ -581,7 +621,7 @@ export function FlooringCalculatorPage() {
                 </>
               ) : method === 'circle' ? (
                 <div className="flex justify-between items-center py-0.5">
-                  <span className="text-[#6E675E]">Diameter</span>
+                  <span className="text-[#6E675E]">Lawn diameter</span>
                   <span className="font-semibold text-[#1A1918]">
                     {diameter} {result.lenUnit}
                   </span>
@@ -595,9 +635,9 @@ export function FlooringCalculatorPage() {
                 </div>
               )}
               <div className="flex justify-between items-center py-0.5 border-t border-[#E4DCD0] pt-2">
-                <span className="text-[#6E675E]">Floor area</span>
+                <span className="text-[#6E675E]">Total lawn area</span>
                 <span className="font-semibold text-[#1A1918]">
-                  {formatAreaDisplay(result.floorArea)} {result.areaUnit}
+                  {formatAreaDisplay(result.totalArea)} {result.areaUnit}
                 </span>
               </div>
               <div className="flex justify-between items-center py-0.5">
@@ -606,109 +646,124 @@ export function FlooringCalculatorPage() {
                   +{formatAreaDisplay(result.extraArea)} {result.areaUnit}
                 </span>
               </div>
-              <div className="flex justify-between items-center py-0.5 border-t border-[#E4DCD0] pt-2 font-bold text-sm">
-                <span className="text-[#1A1918]">Recommended amount</span>
-                <span className="text-[#0B6E54]">
+              <div className="flex justify-between items-center py-0.5 border-t border-[#E4DCD0] pt-2 font-bold">
+                <span className="text-[#1A1918]">Recommended sod amount</span>
+                <span className="text-[#0B6E54] text-sm">
                   {formatAreaDisplay(result.recommendedArea)} {result.areaUnit}
                 </span>
               </div>
             </div>
           )}
-
-          {/* Download PDF button below the final result */}
-          <div className="pt-2 border-t border-[#EAE0D5]">
-            <button
-              id="download-pdf-btn"
-              type="button"
-              onClick={handleDownloadPdf}
-              disabled={isGeneratingPdf}
-              className="w-full min-h-[46px] py-3 px-5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#DDD3C5] text-[#163A5F] font-sans font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xs hover:border-[#163A5F]/30 active:scale-[0.99] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              <FileDown className="w-4 h-4 text-[#163A5F]" />
-              <span>{isGeneratingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
-            </button>
-          </div>
         </section>
       )}
 
-      {/* 5. SEO Content Below Calculator */}
-      <section aria-labelledby="how-to-calculate-flooring-heading" className="mt-10 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
-        <h2
-          id="how-to-calculate-flooring-heading"
-          className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
-        >
-          How do I calculate square footage for flooring?
-        </h2>
-        <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          To find the square footage of any rectangular room, measure the maximum length and width in feet and multiply them together (Length × Width = Area). For irregular or L-shaped rooms, split the layout into separate rectangles, calculate each area individually, and add the totals together. If you measure in metres, multiplying length by width gives your floor area in square metres (m²).
-        </p>
-      </section>
-
-      <section aria-labelledby="how-much-waste-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
-        <h2
-          id="how-much-waste-heading"
-          className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
-        >
-          How much extra flooring should I order for waste?
-        </h2>
-        <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          Most flooring manufacturers and installers recommend ordering <strong>10% extra</strong> for standard plank installations, such as laminate, luxury vinyl plank (LVP), engineered wood, or hardwood. If your room has multiple doorways, closets, curved walls, or if you are installing a diagonal or herringbone pattern, increase your waste factor to <strong>15%</strong> to ensure you do not run short mid-project.
-        </p>
-      </section>
-
-      <section aria-labelledby="boxes-of-flooring-heading" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-3">
-        <h2
-          id="boxes-of-flooring-heading"
-          className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]"
-        >
-          How do I convert square feet to boxes of flooring?
-        </h2>
-        <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          Flooring is packaged and sold in cartons or boxes with a fixed coverage area (typically between 18 and 25 square feet per box). To determine how many boxes to buy, take your recommended total area (including waste) and divide it by the square footage per box listed on the product specifications. Always round up to the next full box.
-        </p>
-      </section>
-
-      {/* 6. Related Calculators & Internal Links */}
-      <section aria-label="Related calculators" className="mt-6 p-6 sm:p-7 rounded-2xl bg-[#FFFFFF] border border-[#E6DDD1] shadow-[0_4px_20px_-2px_rgba(180,150,125,0.12)] space-y-4">
-        <h2 className="text-lg sm:text-xl font-display font-bold text-[#1A1918]">
-          Related Home & Renovation Calculators
-        </h2>
-        <p className="text-sm text-[#4E4942] font-sans">
-          Planning a broader room update or home renovation? Use these related Measurely tools:
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-          <Link
-            href="/tools/tile-calculator"
-            className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
-          >
-            <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
-              <span>Tile Calculator</span>
-              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
-            </div>
-            <p className="text-xs text-[#6E675E] mt-1 font-sans">Calculate tiles for bathrooms, kitchens, and entryways.</p>
-          </Link>
-          <Link
-            href="/tools/paint-calculator"
-            className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
-          >
-            <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
-              <span>Paint Calculator</span>
-              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
-            </div>
-            <p className="text-xs text-[#6E675E] mt-1 font-sans">Estimate gallons or litres of paint for walls and ceilings.</p>
-          </Link>
-          <Link
-            href="/tools/drywall-calculator"
-            className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
-          >
-            <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
-              <span>Drywall Calculator</span>
-              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
-            </div>
-            <p className="text-xs text-[#6E675E] mt-1 font-sans">Find how many drywall sheets you need for room renovations.</p>
-          </Link>
+      {/* 5. Informational & SEO Content */}
+      <article className="mt-12 pt-8 border-t border-[#EAE0D5] space-y-8 font-sans">
+        <div className="space-y-3">
+          <h2 className="text-2xl sm:text-3xl font-display font-bold text-[#1A1918]">
+            How Much Sod Do I Need?
+          </h2>
+          <p className="text-base text-[#4E4942] leading-relaxed">
+            Planning a new turf installation or revitalizing your lawn requires accurate measurements to avoid running short during installation or paying for unused turf that quickly wilts. Using a precise <strong>sod calculator</strong> gives you the exact square footage or square meterage needed for your yard with an optimal cutting buffer.
+          </p>
         </div>
-      </section>
-    </main>
+
+        {/* How to Measure & Calculate Sod */}
+        <div className="space-y-4">
+          <h3 className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]">
+            How to Calculate Sod for Your Lawn
+          </h3>
+          <p className="text-base text-[#4E4942] leading-relaxed">
+            To determine how much sod you need, measure your lawn area according to its geometric shape:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 rounded-xl bg-[#FAF6F0] border border-[#E4DCD0] space-y-1.5">
+              <h4 className="font-bold text-sm text-[#1A1918]">Rectangular Lawns</h4>
+              <p className="text-xs text-[#6E675E] leading-relaxed">
+                Multiply length by width in feet or meters:
+              </p>
+              <p className="font-mono font-bold text-xs text-[#163A5F]">
+                Area = Length × Width
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-[#FAF6F0] border border-[#E4DCD0] space-y-1.5">
+              <h4 className="font-bold text-sm text-[#1A1918]">Circular Lawns</h4>
+              <p className="text-xs text-[#6E675E] leading-relaxed">
+                Divide the diameter by 2 to get the radius:
+              </p>
+              <p className="font-mono font-bold text-xs text-[#163A5F]">
+                Area = π × (Diameter / 2)²
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Why Add Extra Buffer */}
+        <div className="space-y-3">
+          <h3 className="text-xl sm:text-2xl font-display font-bold text-[#1A1918]">
+            Why You Should Order Extra Sod
+          </h3>
+          <p className="text-base text-[#4E4942] leading-relaxed">
+            Unlike painting or drywalling where spare materials can be stored for months, fresh sod is living grass that must be installed immediately upon delivery. Adding <strong>10% extra sod</strong> is strongly recommended to account for:
+          </p>
+          <ul className="list-disc list-inside space-y-1.5 text-sm sm:text-base text-[#4E4942] pl-1">
+            <li>Curved landscaping borders, garden pathways, and flowerbeds</li>
+            <li>Trimming around trees, irrigation boxes, and fence corners</li>
+            <li>Fitting odd-angled property boundaries and slopes</li>
+            <li>Replacing damaged or dried turf edges during transport</li>
+          </ul>
+        </div>
+
+        {/* Quick Tips */}
+        <div className="p-5 rounded-2xl bg-[#EDF7F2] border border-[#B4E2D3] space-y-2">
+          <h4 className="font-bold text-sm text-[#0B6E54]">Sod Installation Pro Tip</h4>
+          <p className="text-xs sm:text-sm text-[#0B6E54] leading-relaxed">
+            Always measure your yard in sections if you have an irregular landscape. Calculate each rectangle or curved patch separately, then sum the areas together in the <strong>Custom area</strong> input to ensure comprehensive coverage.
+          </p>
+        </div>
+
+        {/* Related Calculators & Internal Links */}
+        <div className="pt-6 border-t border-[#EAE0D5] space-y-4">
+          <h3 className="text-lg sm:text-xl font-display font-bold text-[#1A1918]">
+            Related Landscaping & Yard Calculators
+          </h3>
+          <p className="text-sm text-[#4E4942] font-sans">
+            Prepping your lawn base or enclosing your new sod turf? Calculate materials with these tools:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+            <Link
+              href="/tools/topsoil-calculator"
+              className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
+            >
+              <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
+                <span>Topsoil Calculator</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
+              </div>
+              <p className="text-xs text-[#6E675E] mt-1 font-sans">Calculate screened soil for lawn underlay and seedbed prep.</p>
+            </Link>
+            <Link
+              href="/tools/mulch-calculator"
+              className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
+            >
+              <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
+                <span>Mulch Calculator</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
+              </div>
+              <p className="text-xs text-[#6E675E] mt-1 font-sans">Estimate bark mulch for garden beds bordering your lawn.</p>
+            </Link>
+            <Link
+              href="/tools/fence-calculator"
+              className="p-3.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE0] border border-[#E4DCD0] text-left transition-colors group block"
+            >
+              <div className="font-semibold text-sm text-[#163A5F] group-hover:underline flex items-center justify-between">
+                <span>Fence Calculator</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" />
+              </div>
+              <p className="text-xs text-[#6E675E] mt-1 font-sans">Calculate perimeter fencing and pickets around your yard.</p>
+            </Link>
+          </div>
+        </div>
+      </article>
+    </div>
   );
 }
