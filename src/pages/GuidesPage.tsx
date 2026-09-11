@@ -160,7 +160,7 @@ export function GuidesPage() {
             <span>Need immediate numbers?</span>
           </div>
           <h2 className="font-display font-bold text-lg sm:text-xl text-[#1A1918]">
-            Explore all 13 Measurely material calculators
+            Explore all 13 ProjectTally material calculators
           </h2>
           <p className="text-sm text-[#4E4942] font-sans">
             Calculate concrete, drywall, pavers, mulch, sod, and more.

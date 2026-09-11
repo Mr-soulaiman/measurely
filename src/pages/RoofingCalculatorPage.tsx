@@ -205,7 +205,7 @@ export function RoofingCalculatorPage() {
       <div className="mb-6 sm:mb-8 space-y-2">
         <div className="flex items-center gap-2 text-xs text-[#6E675E] font-medium font-sans">
           <Link href="/" className="hover:text-[#163A5F] transition-colors">
-            Measurely
+            ProjectTally
           </Link>
           <span>/</span>
           <Link href="/tools" className="hover:text-[#163A5F] transition-colors">
@@ -658,7 +658,7 @@ export function RoofingCalculatorPage() {
             Related Construction & Exterior Calculators
           </h3>
           <p className="text-sm text-[#4E4942] font-sans">
-            Building or renovating a structure? Estimate other key building materials with these Measurely tools:
+            Building or renovating a structure? Estimate other key building materials with these ProjectTally tools:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
             <Link

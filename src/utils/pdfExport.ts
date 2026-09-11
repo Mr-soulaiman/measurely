@@ -1,8 +1,8 @@
 import { jsPDF } from 'jspdf';
 
-// High-contrast, saturated Measurely palette
+// High-contrast, saturated ProjectTally palette
 const COLOR_PRIMARY_NAVY = [14, 38, 70] as const; // #0E2646 - deep navy for headings
-const COLOR_RESULT_BLUE = [10, 68, 125] as const; // #0A447D - strong Measurely blue for primary figures
+const COLOR_RESULT_BLUE = [10, 68, 125] as const; // #0A447D - strong ProjectTally blue for primary figures
 const COLOR_DARK_TEXT = [18, 22, 28] as const; // #12161C - dark charcoal for values
 const COLOR_LABEL_NAVY = [50, 70, 95] as const; // #32465F - medium-dark blue for secondary labels
 const COLOR_CARD_BG = [245, 248, 252] as const; // #F5F8FC - soft background for result & input cards
@@ -24,7 +24,7 @@ async function getLogoBase64(): Promise<string | null> {
       try {
         const fs = await import('fs');
         const path = await import('path');
-        const filePath = path.join(process.cwd(), 'public', 'assets', 'measurely-logo.png');
+        const filePath = path.join(process.cwd(), 'public', 'assets', 'projecttally-logo.png');
         if (fs.existsSync(filePath)) {
           const buffer = fs.readFileSync(filePath);
           cachedLogoBase64 = `data:image/png;base64,${buffer.toString('base64')}`;
@@ -35,7 +35,7 @@ async function getLogoBase64(): Promise<string | null> {
       }
       return null;
     }
-    const res = await fetch('/assets/measurely-logo.png');
+    const res = await fetch('/assets/projecttally-logo.png');
     if (!res.ok) return null;
     const blob = await res.blob();
     return new Promise((resolve) => {
@@ -48,7 +48,7 @@ async function getLogoBase64(): Promise<string | null> {
       reader.readAsDataURL(blob);
     });
   } catch (e) {
-    console.warn('Unable to load Measurely logo for PDF export', e);
+    console.warn('Unable to load ProjectTally logo for PDF export', e);
     return null;
   }
 }
@@ -286,7 +286,7 @@ function formatAreaDisplay(val: number): string {
 
 /**
  * 1. HEADER
- * Shows Measurely logo, calculator title (24pt), "Calculation report · <Date>" (10pt).
+ * Shows ProjectTally logo, calculator title (24pt), "Calculation report · <Date>" (10pt).
  */
 async function drawPdfHeader(doc: jsPDF, calculatorName: string): Promise<number> {
   const logoData = await getLogoBase64();
@@ -295,22 +295,22 @@ async function drawPdfHeader(doc: jsPDF, calculatorName: string): Promise<number
   const headerY = 16;
 
   if (logoData) {
-    // Aspect ratio: ~4.3745
-    const logoW = 44;
-    const logoH = logoW / 4.3745; // ~10.06mm
+    // Aspect ratio: ~3.5428 (1612 x 455)
+    const logoW = 42;
+    const logoH = logoW / 3.5428; // ~11.85mm
     try {
       doc.addImage(logoData, 'PNG', leftX, headerY, logoW, logoH);
     } catch {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(22);
       doc.setTextColor(...COLOR_PRIMARY_NAVY);
-      doc.text('Measurely', leftX, headerY + 8);
+      doc.text('ProjectTally', leftX, headerY + 8);
     }
   } else {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(22);
     doc.setTextColor(...COLOR_PRIMARY_NAVY);
-    doc.text('Measurely', leftX, headerY + 8);
+    doc.text('ProjectTally', leftX, headerY + 8);
   }
 
   // Right-aligned header info
@@ -349,12 +349,12 @@ function drawPdfFooter(doc: jsPDF): void {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(...COLOR_PRIMARY_NAVY);
-  doc.text('Calculated with Measurely', leftX, footerY + 5);
+  doc.text('Calculated with ProjectTally', leftX, footerY + 5);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(...COLOR_LABEL_NAVY);
-  doc.text('•  Measure. Calculate. Build.', leftX + 43, footerY + 5);
+  doc.text('•  Measure. Calculate. Build.', leftX + 46, footerY + 5);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
@@ -752,7 +752,7 @@ export async function createPaintCalculatorPdfDoc(data: PaintPdfData): Promise<j
  */
 export async function exportPaintCalculatorPdf(data: PaintPdfData): Promise<void> {
   const doc = await createPaintCalculatorPdfDoc(data);
-  doc.save('measurely-paint-calculation.pdf');
+  doc.save('projecttally-paint-calculation.pdf');
 }
 
 /**
@@ -900,7 +900,7 @@ export async function createBulkMaterialPdfDoc(data: BulkMaterialPdfData): Promi
  */
 export async function exportBulkMaterialPdf(data: BulkMaterialPdfData): Promise<void> {
   const doc = await createBulkMaterialPdfDoc(data);
-  doc.save(`measurely-${data.materialType}-calculation.pdf`);
+  doc.save(`projecttally-${data.materialType}-calculation.pdf`);
 }
 
 /**
@@ -1013,7 +1013,7 @@ export async function createFlooringCalculatorPdfDoc(data: FlooringPdfData): Pro
  */
 export async function exportFlooringCalculatorPdf(data: FlooringPdfData): Promise<void> {
   const doc = await createFlooringCalculatorPdfDoc(data);
-  doc.save('Measurely-Flooring-Calculator.pdf');
+  doc.save('ProjectTally-Flooring-Calculator.pdf');
 }
 
 /**
@@ -1148,7 +1148,7 @@ export async function createTileCalculatorPdfDoc(data: TilePdfData): Promise<jsP
  */
 export async function exportTileCalculatorPdf(data: TilePdfData): Promise<void> {
   const doc = await createTileCalculatorPdfDoc(data);
-  doc.save('Measurely-Tile-Calculator.pdf');
+  doc.save('ProjectTally-Tile-Calculator.pdf');
 }
 
 /**
@@ -1277,7 +1277,7 @@ export async function createDrywallCalculatorPdfDoc(data: DrywallPdfData): Promi
  */
 export async function exportDrywallCalculatorPdf(data: DrywallPdfData): Promise<void> {
   const doc = await createDrywallCalculatorPdfDoc(data);
-  doc.save('Measurely-Drywall-Calculator.pdf');
+  doc.save('ProjectTally-Drywall-Calculator.pdf');
 }
 
 /**
@@ -1416,7 +1416,7 @@ export async function createPaverCalculatorPdfDoc(data: PaverPdfData): Promise<j
  */
 export async function exportPaverCalculatorPdf(data: PaverPdfData): Promise<void> {
   const doc = await createPaverCalculatorPdfDoc(data);
-  doc.save('Measurely-Paver-Calculator.pdf');
+  doc.save('ProjectTally-Paver-Calculator.pdf');
 }
 
 /**
@@ -1533,7 +1533,7 @@ export async function createSodCalculatorPdfDoc(data: SodPdfData): Promise<jsPDF
  */
 export async function exportSodCalculatorPdf(data: SodPdfData): Promise<void> {
   const doc = await createSodCalculatorPdfDoc(data);
-  doc.save('Measurely-Sod-Calculator.pdf');
+  doc.save('ProjectTally-Sod-Calculator.pdf');
 }
 
 /**
@@ -1641,7 +1641,7 @@ export async function createRoofingCalculatorPdfDoc(data: RoofingPdfData): Promi
  */
 export async function exportRoofingCalculatorPdf(data: RoofingPdfData): Promise<void> {
   const doc = await createRoofingCalculatorPdfDoc(data);
-  doc.save('Measurely-Roofing-Calculator.pdf');
+  doc.save('ProjectTally-Roofing-Calculator.pdf');
 }
 
 /**
@@ -1736,7 +1736,7 @@ export async function createFenceCalculatorPdfDoc(data: FencePdfData): Promise<j
  */
 export async function exportFenceCalculatorPdf(data: FencePdfData): Promise<void> {
   const doc = await createFenceCalculatorPdfDoc(data);
-  doc.save('Measurely-Fence-Calculator.pdf');
+  doc.save('ProjectTally-Fence-Calculator.pdf');
 }
 
 

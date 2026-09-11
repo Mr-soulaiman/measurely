@@ -755,7 +755,7 @@ export function DrywallCalculatorPage() {
             Related Interior Renovation Calculators
           </h3>
           <p className="text-sm text-[#4E4942] font-sans">
-            Once your drywall is hung and finished, estimate complementary materials with these Measurely tools:
+            Once your drywall is hung and finished, estimate complementary materials with these ProjectTally tools:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
             <Link

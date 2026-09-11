@@ -1,6 +1,6 @@
 {
-  "name": "Measurely",
-  "description": "Measurely creates simple calculators that help you estimate materials for home and DIY projects.",
+  "name": "ProjectTally",
+  "description": "ProjectTally creates simple calculators that help you estimate materials for home and DIY projects.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

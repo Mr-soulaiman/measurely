@@ -33,14 +33,14 @@ export function Navigation() {
         <Link
           href="/"
           className="flex items-center group cursor-pointer focus-visible:outline-2 focus-visible:outline-[#163A5F] rounded-md transition-opacity hover:opacity-90 py-0.5"
-          aria-label="Measurely — Home"
+          aria-label="ProjectTally — Home"
         >
           <img
-            src="/assets/measurely-logo.png"
-            alt="Measurely"
+            src="/assets/projecttally-logo.png"
+            alt="ProjectTally"
             className="h-8 sm:h-9 w-auto object-contain block transition-transform group-hover:scale-[1.02]"
-            width="1098"
-            height="251"
+            width="1612"
+            height="455"
             loading="eager"
             decoding="async"
           />

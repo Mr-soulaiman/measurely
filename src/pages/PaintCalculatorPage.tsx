@@ -1386,7 +1386,7 @@ export function PaintCalculatorPage() {
           Related Home Improvement Calculators
         </h2>
         <p className="text-sm text-[#4E4942] font-sans">
-          Complement your painting project with these related Measurely tools:
+          Complement your painting project with these related ProjectTally tools:
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
           <Link
