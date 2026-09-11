@@ -674,7 +674,7 @@ export function FlooringCalculatorPage() {
           Related Home & Renovation Calculators
         </h2>
         <p className="text-sm text-[#4E4942] font-sans">
-          Planning a broader room update or home renovation? Use these related ProjectTally tools:
+          Planning a broader room update or home renovation? Use these related Measivo tools:
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
           <Link

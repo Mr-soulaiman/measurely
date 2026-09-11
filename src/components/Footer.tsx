@@ -11,11 +11,11 @@ export function Footer() {
           <Link
             href="/"
             className="flex items-center group cursor-pointer focus-visible:outline-2 focus-visible:outline-[#163A5F] rounded-md transition-opacity hover:opacity-90"
-            aria-label="ProjectTally — Home"
+            aria-label="Measivo — Home"
           >
             <img
               src="/assets/projecttally-logo.png"
-              alt="ProjectTally"
+              alt="Measivo"
               className="h-6 sm:h-7 w-auto object-contain block"
               width="1604"
               height="443"
@@ -62,7 +62,7 @@ export function Footer() {
 
       {/* Copyright Notice */}
       <div className="max-w-4xl mx-auto mt-6 pt-5 border-t border-[#E0D5C8] flex flex-col sm:flex-row items-center justify-between gap-2 text-center text-xs font-sans text-[#787168]">
-        <span>© {currentYear} ProjectTally</span>
+        <span>© {currentYear} Measivo</span>
         <span>Simple material calculators</span>
       </div>
     </footer>

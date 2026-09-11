@@ -3,7 +3,7 @@ interface IconProps {
 }
 
 /**
- * 3D Multicolor Icons from the official ProjectTally asset sheet
+ * 3D Multicolor Icons from the official Measivo asset sheet
  */
 export function FlooringToolIcon({ className = 'w-[30px] h-[30px]' }: IconProps) {
   return (

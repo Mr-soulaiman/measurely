@@ -107,7 +107,7 @@ export function WorkshopShowcase({ onSelectPaintTool }: WorkshopShowcaseProps) {
             “Measure once. Calculate twice.”
           </h2>
           <p className="mt-3 text-base text-[#54524D] leading-relaxed">
-            ProjectTally is building the single most precise suite of architectural and DIY measurement instruments. Starting with our calibrated Paint Engine, each calculator treats physical materials with engineering precision.
+            Measivo is building the single most precise suite of architectural and DIY measurement instruments. Starting with our calibrated Paint Engine, each calculator treats physical materials with engineering precision.
           </p>
         </div>
       </div>

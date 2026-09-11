@@ -883,7 +883,7 @@ export function ConcreteCalculatorPage() {
             Related Hardscaping & Construction Calculators
           </h3>
           <p className="text-sm text-[#4E4942] font-sans mb-4">
-            Pouring a slab often requires ground preparation and bedding. Check out these related ProjectTally tools:
+            Pouring a slab often requires ground preparation and bedding. Check out these related Measivo tools:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Link
