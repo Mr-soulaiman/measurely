@@ -39,8 +39,8 @@ export function Navigation() {
             src="/assets/projecttally-logo.png"
             alt="ProjectTally"
             className="h-8 sm:h-9 w-auto object-contain block transition-transform group-hover:scale-[1.02]"
-            width="1612"
-            height="455"
+            width="1604"
+            height="443"
             loading="eager"
             decoding="async"
           />

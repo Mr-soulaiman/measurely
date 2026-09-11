@@ -17,8 +17,8 @@ export function Footer() {
               src="/assets/projecttally-logo.png"
               alt="ProjectTally"
               className="h-6 sm:h-7 w-auto object-contain block"
-              width="1612"
-              height="455"
+              width="1604"
+              height="443"
               loading="lazy"
               decoding="async"
             />

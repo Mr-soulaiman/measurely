@@ -295,9 +295,9 @@ async function drawPdfHeader(doc: jsPDF, calculatorName: string): Promise<number
   const headerY = 16;
 
   if (logoData) {
-    // Aspect ratio: ~3.5428 (1612 x 455)
+    // Aspect ratio: ~3.6208 (1604 x 443)
     const logoW = 42;
-    const logoH = logoW / 3.5428; // ~11.85mm
+    const logoH = logoW / 3.6208; // ~11.60mm
     try {
       doc.addImage(logoData, 'PNG', leftX, headerY, logoW, logoH);
     } catch {
