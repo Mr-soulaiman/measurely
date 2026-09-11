@@ -7,6 +7,8 @@ import { ToolsPage } from './pages/ToolsPage';
 import { GuidesPage } from './pages/GuidesPage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { TermsPage } from './pages/TermsPage';
 import { PaintCalculatorPage } from './pages/PaintCalculatorPage';
 import { GravelCalculatorPage } from './pages/GravelCalculatorPage';
 import { SandCalculatorPage } from './pages/SandCalculatorPage';
@@ -257,6 +259,16 @@ const ROUTE_METADATA: Record<string, PageMetadata> = {
     description: 'Have a question, found a problem, or have an idea for a calculator? Contact Measivo.',
     canonical: `${PRODUCTION_DOMAIN}/contact`,
   },
+  '/privacy-policy': {
+    title: 'Privacy Policy | Measivo',
+    description: 'Learn how Measivo protects your privacy, uses anonymous calculator inputs, and handles cookies and analytics.',
+    canonical: `${PRODUCTION_DOMAIN}/privacy-policy`,
+  },
+  '/terms': {
+    title: 'Terms of Use | Measivo',
+    description: 'Read the Terms of Use for Measivo. Understand material calculator estimates, user responsibilities, and site terms.',
+    canonical: `${PRODUCTION_DOMAIN}/terms`,
+  },
 };
 
 function AppContent() {
@@ -420,6 +432,10 @@ function AppContent() {
         return <AboutPage />;
       case '/contact':
         return <ContactPage />;
+      case '/privacy-policy':
+        return <PrivacyPolicyPage />;
+      case '/terms':
+        return <TermsPage />;
       case '/':
       default:
         return <HomePage />;

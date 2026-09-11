@@ -17,7 +17,13 @@ export function AboutPage() {
           Measivo creates simple calculators that help you estimate the materials needed for everyday home and DIY projects.
         </p>
         <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
-          Our goal is to make project planning easier without complicated calculations, confusing formulas, or unnecessary steps.
+          From paint and flooring to gravel, concrete, mulch, topsoil, and other common materials, Measivo helps you work out how much you may need before you start your project.
+        </p>
+        <p className="text-sm sm:text-base text-[#4E4942] leading-relaxed font-sans">
+          Our goal is to make project planning easier without complicated calculations, confusing formulas, or unnecessary steps. Enter your measurements, get a clear estimate, and use the result to plan what to buy.
+        </p>
+        <p className="text-sm sm:text-base font-semibold text-[#163A5F] pt-2 font-sans">
+          Measure. Calculate. Build.
         </p>
       </section>
     </main>

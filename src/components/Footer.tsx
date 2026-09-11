@@ -57,6 +57,20 @@ export function Footer() {
           >
             Contact
           </Link>
+          <span className="text-[#C8BEB2] select-none" aria-hidden="true">·</span>
+          <Link
+            href="/privacy-policy"
+            className="text-[#5C554E] hover:text-[#163A5F] transition-colors py-1 cursor-pointer font-medium"
+          >
+            Privacy Policy
+          </Link>
+          <span className="text-[#C8BEB2] select-none" aria-hidden="true">·</span>
+          <Link
+            href="/terms"
+            className="text-[#5C554E] hover:text-[#163A5F] transition-colors py-1 cursor-pointer font-medium"
+          >
+            Terms of Use
+          </Link>
         </nav>
       </div>
 
