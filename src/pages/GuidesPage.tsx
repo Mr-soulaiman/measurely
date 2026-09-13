@@ -257,7 +257,7 @@ export function GuidesPage() {
             <span>Need immediate numbers?</span>
           </div>
           <h2 className="font-display font-bold text-lg sm:text-xl text-[#1A1918]">
-            Explore all 13 Measivo material calculators
+            Explore all 13 Buildoser material calculators
           </h2>
           <p className="text-sm text-[#4E4942] font-sans">
             Calculate concrete, flooring, drywall, pavers, mulch, sod, and more.

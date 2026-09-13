@@ -40,7 +40,7 @@ export function DrivewayGravelGuidePage() {
             href="/tools/gravel-calculator"
             className="inline-flex items-center gap-2 text-sm font-bold text-[#0B6E54] hover:text-[#08503D] transition-colors"
           >
-            <span>Calculate your exact driveway volume in the Measivo Gravel Calculator</span>
+            <span>Calculate your exact driveway volume in the Buildoser Gravel Calculator</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -266,7 +266,7 @@ export function DrivewayGravelGuidePage() {
       <section className="p-6 rounded-2xl bg-gradient-to-br from-[#163A5F] to-[#0D243B] text-white space-y-3">
         <div className="flex items-center gap-2 text-[#80D4B6]">
           <Calculator className="w-5 h-5" />
-          <span className="text-xs font-bold uppercase tracking-wider">Measivo Online Tool</span>
+          <span className="text-xs font-bold uppercase tracking-wider">Buildoser Online Tool</span>
         </div>
         <h2 className="text-xl sm:text-2xl font-display font-bold text-white">
           Calculate Your Driveway in Seconds

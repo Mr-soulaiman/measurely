@@ -1,6 +1,6 @@
 {
-  "name": "Measivo",
-  "description": "Measivo creates simple calculators that help you estimate materials for home and DIY projects.",
+  "name": "Buildoser",
+  "description": "Buildoser creates simple calculators that help you estimate materials for home and DIY projects.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

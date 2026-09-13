@@ -1,8 +1,8 @@
 import { jsPDF } from 'jspdf';
 
-// High-contrast, saturated Measivo palette
+// High-contrast, saturated Buildoser palette
 const COLOR_PRIMARY_NAVY = [14, 38, 70] as const; // #0E2646 - deep navy for headings
-const COLOR_RESULT_BLUE = [10, 68, 125] as const; // #0A447D - strong Measivo blue for primary figures
+const COLOR_RESULT_BLUE = [10, 68, 125] as const; // #0A447D - strong Buildoser blue for primary figures
 const COLOR_DARK_TEXT = [18, 22, 28] as const; // #12161C - dark charcoal for values
 const COLOR_LABEL_NAVY = [50, 70, 95] as const; // #32465F - medium-dark blue for secondary labels
 const COLOR_CARD_BG = [245, 248, 252] as const; // #F5F8FC - soft background for result & input cards
@@ -24,7 +24,7 @@ async function getLogoBase64(): Promise<string | null> {
       try {
         const fs = await import('fs');
         const path = await import('path');
-        const filePath = path.join(process.cwd(), 'public', 'assets', 'projecttally-logo.png');
+        const filePath = path.join(process.cwd(), 'public', 'assets', 'buildoser-logo.png');
         if (fs.existsSync(filePath)) {
           const buffer = fs.readFileSync(filePath);
           cachedLogoBase64 = `data:image/png;base64,${buffer.toString('base64')}`;
@@ -35,7 +35,7 @@ async function getLogoBase64(): Promise<string | null> {
       }
       return null;
     }
-    const res = await fetch('/assets/projecttally-logo.png');
+    const res = await fetch('/assets/buildoser-logo.png');
     if (!res.ok) return null;
     const blob = await res.blob();
     return new Promise((resolve) => {
@@ -286,7 +286,7 @@ function formatAreaDisplay(val: number): string {
 
 /**
  * 1. HEADER
- * Shows Measivo logo, calculator title (24pt), "Calculation report · <Date>" (10pt).
+ * Shows Buildoser logo, calculator title (24pt), "Calculation report · <Date>" (10pt).
  */
 async function drawPdfHeader(doc: jsPDF, calculatorName: string): Promise<number> {
   const logoData = await getLogoBase64();
@@ -304,13 +304,13 @@ async function drawPdfHeader(doc: jsPDF, calculatorName: string): Promise<number
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(22);
       doc.setTextColor(...COLOR_PRIMARY_NAVY);
-      doc.text('Measivo', leftX, headerY + 8);
+      doc.text('Buildoser', leftX, headerY + 8);
     }
   } else {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(22);
     doc.setTextColor(...COLOR_PRIMARY_NAVY);
-    doc.text('Measivo', leftX, headerY + 8);
+    doc.text('Buildoser', leftX, headerY + 8);
   }
 
   // Right-aligned header info
@@ -349,7 +349,7 @@ function drawPdfFooter(doc: jsPDF): void {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(...COLOR_PRIMARY_NAVY);
-  doc.text('Calculated with Measivo', leftX, footerY + 5);
+  doc.text('Calculated with Buildoser', leftX, footerY + 5);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
@@ -359,7 +359,7 @@ function drawPdfFooter(doc: jsPDF): void {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(...COLOR_RESULT_BLUE);
-  doc.text('measurely-tools.vercel.app', rightX, footerY + 5, { align: 'right' });
+  doc.text('buildoser.vercel.app', rightX, footerY + 5, { align: 'right' });
 }
 
 /**
@@ -752,7 +752,7 @@ export async function createPaintCalculatorPdfDoc(data: PaintPdfData): Promise<j
  */
 export async function exportPaintCalculatorPdf(data: PaintPdfData): Promise<void> {
   const doc = await createPaintCalculatorPdfDoc(data);
-  doc.save('measivo-paint-calculation.pdf');
+  doc.save('buildoser-paint-calculation.pdf');
 }
 
 /**
@@ -900,7 +900,7 @@ export async function createBulkMaterialPdfDoc(data: BulkMaterialPdfData): Promi
  */
 export async function exportBulkMaterialPdf(data: BulkMaterialPdfData): Promise<void> {
   const doc = await createBulkMaterialPdfDoc(data);
-  doc.save(`measivo-${data.materialType}-calculation.pdf`);
+  doc.save(`buildoser-${data.materialType}-calculation.pdf`);
 }
 
 /**
@@ -1013,7 +1013,7 @@ export async function createFlooringCalculatorPdfDoc(data: FlooringPdfData): Pro
  */
 export async function exportFlooringCalculatorPdf(data: FlooringPdfData): Promise<void> {
   const doc = await createFlooringCalculatorPdfDoc(data);
-  doc.save('Measivo-Flooring-Calculator.pdf');
+  doc.save('Buildoser-Flooring-Calculator.pdf');
 }
 
 /**
@@ -1148,7 +1148,7 @@ export async function createTileCalculatorPdfDoc(data: TilePdfData): Promise<jsP
  */
 export async function exportTileCalculatorPdf(data: TilePdfData): Promise<void> {
   const doc = await createTileCalculatorPdfDoc(data);
-  doc.save('Measivo-Tile-Calculator.pdf');
+  doc.save('Buildoser-Tile-Calculator.pdf');
 }
 
 /**
@@ -1277,7 +1277,7 @@ export async function createDrywallCalculatorPdfDoc(data: DrywallPdfData): Promi
  */
 export async function exportDrywallCalculatorPdf(data: DrywallPdfData): Promise<void> {
   const doc = await createDrywallCalculatorPdfDoc(data);
-  doc.save('Measivo-Drywall-Calculator.pdf');
+  doc.save('Buildoser-Drywall-Calculator.pdf');
 }
 
 /**
@@ -1416,7 +1416,7 @@ export async function createPaverCalculatorPdfDoc(data: PaverPdfData): Promise<j
  */
 export async function exportPaverCalculatorPdf(data: PaverPdfData): Promise<void> {
   const doc = await createPaverCalculatorPdfDoc(data);
-  doc.save('Measivo-Paver-Calculator.pdf');
+  doc.save('Buildoser-Paver-Calculator.pdf');
 }
 
 /**
@@ -1533,7 +1533,7 @@ export async function createSodCalculatorPdfDoc(data: SodPdfData): Promise<jsPDF
  */
 export async function exportSodCalculatorPdf(data: SodPdfData): Promise<void> {
   const doc = await createSodCalculatorPdfDoc(data);
-  doc.save('Measivo-Sod-Calculator.pdf');
+  doc.save('Buildoser-Sod-Calculator.pdf');
 }
 
 /**
@@ -1641,7 +1641,7 @@ export async function createRoofingCalculatorPdfDoc(data: RoofingPdfData): Promi
  */
 export async function exportRoofingCalculatorPdf(data: RoofingPdfData): Promise<void> {
   const doc = await createRoofingCalculatorPdfDoc(data);
-  doc.save('Measivo-Roofing-Calculator.pdf');
+  doc.save('Buildoser-Roofing-Calculator.pdf');
 }
 
 /**
@@ -1736,7 +1736,7 @@ export async function createFenceCalculatorPdfDoc(data: FencePdfData): Promise<j
  */
 export async function exportFenceCalculatorPdf(data: FencePdfData): Promise<void> {
   const doc = await createFenceCalculatorPdfDoc(data);
-  doc.save('Measivo-Fence-Calculator.pdf');
+  doc.save('Buildoser-Fence-Calculator.pdf');
 }
 
 

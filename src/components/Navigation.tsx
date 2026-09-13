@@ -33,14 +33,14 @@ export function Navigation() {
         <Link
           href="/"
           className="flex items-center group cursor-pointer focus-visible:outline-2 focus-visible:outline-[#163A5F] rounded-md transition-opacity hover:opacity-90 py-0.5"
-          aria-label="Measivo — Home"
+          aria-label="Buildoser — Home"
         >
           <img
-            src="/assets/projecttally-logo.png"
-            alt="Measivo"
+            src="/assets/buildoser-logo.png"
+            alt="Buildoser"
             className="h-8 sm:h-9 w-auto object-contain block transition-transform group-hover:scale-[1.02]"
-            width="1604"
-            height="443"
+            width="1326"
+            height="386"
             loading="eager"
             decoding="async"
           />
