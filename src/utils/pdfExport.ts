@@ -359,7 +359,7 @@ function drawPdfFooter(doc: jsPDF): void {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(...COLOR_RESULT_BLUE);
-  doc.text('buildoser.vercel.app', rightX, footerY + 5, { align: 'right' });
+  doc.text('buildoser.com', rightX, footerY + 5, { align: 'right' });
 }
 
 /**

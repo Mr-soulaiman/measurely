@@ -10,7 +10,7 @@ Whenever a new calculator/tool is added to Buildoser, ALWAYS automatically updat
    - Add the new calculator card to the available tools list with its icon, name, description, and link button.
 
 3. **Routing & SEO Metadata (`src/App.tsx`)**:
-   - Add the route to `ROUTE_METADATA` with title, description, and canonical URL (`https://buildoser.vercel.app/tools/...`).
+   - Add the route to `ROUTE_METADATA` with title, description, and canonical URL (`https://buildoser.com/tools/...`).
    - Add route normalization if accessed via shorthand path.
    - Render the page component in `renderCurrentPage`.
 
