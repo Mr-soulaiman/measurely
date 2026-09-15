@@ -443,7 +443,7 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F6EFE6] text-[#1A1918] font-sans flex flex-col justify-between antialiased selection:bg-[#163A5F]/20 selection:text-[#163A5F]">
+    <div className="min-h-screen bg-[#F1F6FA] text-[#1A1918] font-sans flex flex-col justify-between antialiased selection:bg-[#163A5F]/20 selection:text-[#163A5F]">
       <Navigation />
       {renderCurrentPage()}
       <Footer />

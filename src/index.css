@@ -10,13 +10,13 @@
 /* Base Body Styles */
 body {
   font-family: var(--font-sans);
-  background-color: #F6EFE6;
+  background-color: #F1F6FA;
   color: #1A1918;
 }
 
-/* Layer 1: Warm Page Canvas */
+/* Layer 1: Cool Page Canvas */
 .canvas-sand {
-  background-color: #F6EFE6;
+  background-color: #F1F6FA;
 }
 
 /* Layer 2: Light Calculator Surfaces / Cards */

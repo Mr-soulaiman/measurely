@@ -24,7 +24,7 @@ export function Navigation() {
   };
 
   return (
-    <header className="w-full bg-[#F8F3EC]/95 backdrop-blur-md border-b border-[#E8DFD3] sticky top-0 z-40">
+    <header className="w-full bg-[#F1F6FA]/95 backdrop-blur-md border-b border-[#E8DFD3] sticky top-0 z-40">
       {/* Top Architectural Accent Line */}
       <div className="h-1 bg-[#163A5F] w-full" />
 
@@ -87,7 +87,7 @@ export function Navigation() {
       {mobileMenuOpen && (
         <nav
           id="mobile-navigation"
-          className="sm:hidden border-t border-[#E8DFD3] bg-[#F8F3EC] px-5 py-4 space-y-2 shadow-[0_8px_20px_rgba(180,150,125,0.15)]"
+          className="sm:hidden border-t border-[#E8DFD3] bg-[#F1F6FA] px-5 py-4 space-y-2 shadow-[0_8px_20px_rgba(180,150,125,0.15)]"
           aria-label="Mobile navigation"
         >
           {navItems.map((item) => {
