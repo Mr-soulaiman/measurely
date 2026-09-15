@@ -164,8 +164,8 @@ export function PrivacyPolicyPage() {
               Contact page
             </Link>{' '}
             or email us at{' '}
-            <a href="mailto:hello@buildoser.com" className="text-[#163A5F] underline font-medium hover:text-[#112F4D]">
-              hello@buildoser.com
+            <a href="mailto:martah.soulaiman10@gmail.com" className="text-[#163A5F] underline font-medium hover:text-[#112F4D]">
+              martah.soulaiman10@gmail.com
             </a>.
           </p>
         </section>

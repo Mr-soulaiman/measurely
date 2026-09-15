@@ -42,10 +42,10 @@ export function ContactPage() {
                 <p>
                   Please email us directly at{' '}
                   <a
-                    href="mailto:hello@buildoser.com"
+                    href="mailto:martah.soulaiman10@gmail.com"
                     className="font-semibold text-[#163A5F] underline hover:text-[#112F4D]"
                   >
-                    hello@buildoser.com
+                    martah.soulaiman10@gmail.com
                   </a>{' '}
                   and we will be glad to assist you.
                 </p>
@@ -134,10 +134,10 @@ export function ContactPage() {
           <span>Email directly</span>
         </div>
         <a
-          href="mailto:hello@buildoser.com"
+          href="mailto:martah.soulaiman10@gmail.com"
           className="font-semibold text-[#163A5F] hover:underline"
         >
-          hello@buildoser.com
+          martah.soulaiman10@gmail.com
         </a>
       </section>
     </main>
