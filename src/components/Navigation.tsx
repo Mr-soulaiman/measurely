@@ -47,17 +47,20 @@ export function Navigation() {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden sm:flex items-center gap-1.5" aria-label="Main navigation">
+        <nav
+          className="hidden sm:flex items-center gap-1.5 p-1 rounded-xl bg-[#E5EFF8] border border-[#CFE0EF] shadow-[0_2px_8px_rgba(22,58,95,0.06)] ring-1 ring-[#163A5F]/5"
+          aria-label="Main navigation"
+        >
           {navItems.map((item) => {
             const active = isActive(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-sans tracking-wide transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
+                className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-sans tracking-wide transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
                   active
                     ? 'bg-[#163A5F] text-white font-semibold shadow-sm'
-                    : 'text-[#5A544C] hover:text-[#1A1918] hover:bg-[#EDE5DA] font-medium'
+                    : 'text-[#335070] hover:text-[#163A5F] hover:bg-[#D7E6F3] font-medium'
                 }`}
                 aria-current={active ? 'page' : undefined}
               >
@@ -73,7 +76,7 @@ export function Navigation() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="min-h-[44px] min-w-[44px] p-2 rounded-lg bg-[#FFFFFF] border border-[#E2D8CC] text-[#1A1918] shadow-[0_1px_3px_rgba(180,150,125,0.15)] flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
+            className="min-h-[44px] min-w-[44px] p-2 rounded-xl bg-[#E5EFF8] border border-[#CFE0EF] text-[#163A5F] shadow-[0_1px_4px_rgba(22,58,95,0.08)] flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
             aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation"
@@ -87,34 +90,36 @@ export function Navigation() {
       {mobileMenuOpen && (
         <nav
           id="mobile-navigation"
-          className="sm:hidden border-t border-[#E8DFD3] bg-[#F1F6FA] px-5 py-4 space-y-2 shadow-[0_8px_20px_rgba(180,150,125,0.15)]"
+          className="sm:hidden border-t border-[#E8DFD3] bg-[#F1F6FA] px-5 py-3 shadow-[0_8px_20px_rgba(22,58,95,0.12)]"
           aria-label="Mobile navigation"
         >
-          {navItems.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <button
-                key={item.href}
-                type="button"
-                onClick={() => {
-                  navigate(item.href);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full text-left min-h-[44px] px-4 py-3 rounded-xl text-sm font-sans tracking-wide transition-all duration-150 flex items-center justify-between cursor-pointer ${
-                  active
-                    ? 'bg-[#163A5F] text-white font-semibold shadow-sm'
-                    : 'text-[#2C2A27] hover:bg-[#EDE5DA] border border-transparent font-medium'
-                }`}
-                aria-current={active ? 'page' : undefined}
-              >
-                <div className="flex items-center gap-2.5">
-                  {active && <span className="w-2 h-2 rounded-full bg-[#D95D39]" aria-hidden="true" />}
-                  <span>{item.label}</span>
-                </div>
-                <ChevronRight className="w-4 h-4 opacity-70" />
-              </button>
-            );
-          })}
+          <div className="p-1.5 rounded-2xl bg-[#E5EFF8] border border-[#CFE0EF] shadow-[0_2px_8px_rgba(22,58,95,0.06)] space-y-1">
+            {navItems.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={() => {
+                    navigate(item.href);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left min-h-[44px] px-4 py-2.5 rounded-xl text-sm font-sans tracking-wide transition-all duration-150 flex items-center justify-between cursor-pointer ${
+                    active
+                      ? 'bg-[#163A5F] text-white font-semibold shadow-sm'
+                      : 'text-[#335070] hover:text-[#163A5F] hover:bg-[#D7E6F3] border border-transparent font-medium'
+                  }`}
+                  aria-current={active ? 'page' : undefined}
+                >
+                  <div className="flex items-center gap-2.5">
+                    {active && <span className="w-2 h-2 rounded-full bg-[#D95D39]" aria-hidden="true" />}
+                    <span>{item.label}</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 opacity-70" />
+                </button>
+              );
+            })}
+          </div>
         </nav>
       )}
     </header>
