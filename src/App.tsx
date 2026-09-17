@@ -41,7 +41,7 @@ interface PageMetadata {
   canonical: string;
 }
 
-const PRODUCTION_DOMAIN = 'https://buildoser.com';
+const PRODUCTION_DOMAIN = 'https://www.buildoser.com';
 
 const ROUTE_METADATA: Record<string, PageMetadata> = {
   '/': {
